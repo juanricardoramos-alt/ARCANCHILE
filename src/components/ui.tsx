@@ -141,8 +141,8 @@ export function KpiCard({
         accent ? 'border-amber-300 bg-gradient-to-br from-amber-50 to-white' : 'border-steel-200 bg-white'
       }`}
     >
-      <div className="text-xs font-semibold uppercase tracking-wide text-steel-500">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-navy-900">{value}</div>
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-steel-500 sm:text-xs">{label}</div>
+      <div className="mt-1 break-words text-xl font-bold leading-tight text-navy-900 sm:text-2xl">{value}</div>
       {sub && <div className="mt-1 text-xs text-steel-500">{sub}</div>}
     </div>
   );

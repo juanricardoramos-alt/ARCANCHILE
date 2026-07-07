@@ -31,6 +31,7 @@ import { CRM_LABEL } from '../data/types';
 import { KpiCard, PipeIcon, SectionTitle } from '../components/ui';
 import { ChileMap } from '../components/ChileMap';
 import { useApp } from '../context/AppContext';
+import { useIsMobile } from '../lib/useIsMobile';
 
 const STAGE_COLORS: Record<string, string> = {
   'Estudio / Prefactibilidad': '#94a3b8',
@@ -61,6 +62,7 @@ const FUNNEL: { state: CrmState; color: string }[] = [
 export function Dashboard() {
   const [scope, setScope] = useState<Scope>('todos');
   const { crm } = useApp();
+  const isMobile = useIsMobile();
 
   // CRM: contactos reales de la BBDD
   const crmCounts: Record<CrmState, number> = { pendiente: 0, contactado: 0, reunion: 0, propuesta: 0, seguimiento: 0 };
@@ -301,9 +303,12 @@ export function Dashboard() {
               <YAxis
                 type="category"
                 dataKey="name"
-                width={210}
-                tick={{ fontSize: 10.5, fill: '#334155' }}
-                tickFormatter={(v: string) => (v.length > 34 ? `${v.slice(0, 33)}…` : v)}
+                width={isMobile ? 116 : 210}
+                tick={{ fontSize: isMobile ? 9 : 10.5, fill: '#334155' }}
+                tickFormatter={(v: string) => {
+                  const max = isMobile ? 18 : 34;
+                  return v.length > max ? `${v.slice(0, max - 1)}…` : v;
+                }}
               />
               <Tooltip formatter={(value) => [fmtMusd(Number(value)), 'Inversión']} labelStyle={{ fontWeight: 700 }} />
               <Bar dataKey="investmentMUSD" radius={[0, 3, 3, 0]}>

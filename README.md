@@ -12,6 +12,8 @@ npm run build    # type-check + build de producción
 
 **Acceso demo (login simulado, sin backend):** usuario `admin` · contraseña `arcanchile2026`
 
+**Responsivo (celular / tablet / desktop):** navegación con menú hamburguesa en celular; el catálogo y el CRM de contactos se muestran como **tarjetas táctiles** en celular (con botones grandes **Llamar / WhatsApp / Email**); KPIs, gráficos (Recharts) y filtros se adaptan al ancho; ninguna vista desborda horizontalmente y las tablas anchas conservan scroll interno.
+
 ### Clasificación Core Pipeline vs Otros
 
 Cada uno de los 69 proyectos está clasificado según el core de ARCANCHILE (ingeniería e inspección de **ductos / pipeline**):

@@ -143,12 +143,12 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-steel-200 bg-white p-3 shadow-sm">
+      <div className="grid grid-cols-2 items-center gap-2 rounded-lg border border-steel-200 bg-white p-3 shadow-sm sm:flex sm:flex-wrap [&>select]:w-full sm:[&>select]:w-auto">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar nombre, empresa, cargo o correo…"
-          className="min-w-52 flex-1 rounded border border-steel-300 px-3 py-1.5 text-sm outline-none focus:border-amber-500"
+          className="col-span-2 w-full rounded border border-steel-300 px-3 py-1.5 text-sm outline-none focus:border-amber-500 sm:w-auto sm:min-w-52 sm:flex-1"
         />
         <select value={origen} onChange={(e) => setOrigen(e.target.value)} className="rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500">
           <option value="">Toda fuente</option>
@@ -191,7 +191,73 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
         </label>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-steel-200 bg-white shadow-sm">
+      {/* Tarjetas en celular */}
+      <div className="space-y-3 md:hidden">
+        {filtered.map((c) => {
+          const tel = telHref(c.fono);
+          const wa = waHref(c.fono);
+          return (
+            <div key={c.id} className="rounded-lg border border-steel-200 bg-white p-3 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-900 text-[11px] font-bold text-white">{c.prioridad}</span>
+                    <span className="font-bold text-navy-900">{c.nombre}</span>
+                    <LinkedInIcon className="h-3.5 w-3.5 text-sky-700" />
+                  </div>
+                  <div className="mt-0.5 text-xs text-steel-600">{c.cargo}</div>
+                  <div className="text-xs text-steel-500">
+                    {c.empresa} · {SECTOR_LABEL[c.sector]}
+                  </div>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <ContactoNivelBadge nivel={c.nivel} />
+                  <OrigenBadge origen={c.origen} />
+                </div>
+              </div>
+              {c.projectIds.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {c.projectIds.slice(0, 3).map((pid) => (
+                    <Link key={pid} to={`/proyectos/${pid}`} className="rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
+                      {pid}
+                    </Link>
+                  ))}
+                  {c.projectIds.length > 3 && <span className="text-[11px] text-steel-400">+{c.projectIds.length - 3}</span>}
+                </div>
+              )}
+              {c.nota && <div className="mt-2 text-[11px] text-steel-500">{c.nota}</div>}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {tel && (
+                  <a href={tel} className="rounded bg-navy-900 px-3 py-1.5 text-xs font-bold text-white">
+                    Llamar
+                  </a>
+                )}
+                {wa && (
+                  <a href={wa} target="_blank" rel="noopener noreferrer" className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white">
+                    WhatsApp
+                  </a>
+                )}
+                {c.email && (
+                  <a href={`mailto:${c.email}`} className="rounded border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700">
+                    Email
+                  </a>
+                )}
+                <span className="ml-auto">
+                  <CrmControl contactKey={realKey(c)} initial={c.crmInicial} />
+                </span>
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && (
+          <p className="rounded-lg border border-steel-200 bg-white py-8 text-center text-sm text-steel-500">
+            No hay contactos para los filtros seleccionados.
+          </p>
+        )}
+      </div>
+
+      {/* Tabla en tablet/desktop */}
+      <div className="hidden overflow-x-auto rounded-lg border border-steel-200 bg-white shadow-sm md:block">
         <table className="w-full min-w-[1080px] border-collapse">
           <thead className="border-b-2 border-navy-900 bg-steel-50">
             <tr>

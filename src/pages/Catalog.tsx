@@ -14,6 +14,7 @@ import {
   UnconfirmedFlag,
 } from '../components/ui';
 import { useApp } from '../context/AppContext';
+import { useIsMobile } from '../lib/useIsMobile';
 
 type SortKey = 'name' | 'owner' | 'sector' | 'region' | 'investmentMUSD' | 'stage' | 'priority' | 'relevanciaArcanchile';
 
@@ -48,7 +49,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500"
+      className="w-full rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500 sm:w-auto"
     >
       <option value="">{placeholder}</option>
       {options.map((o) => (
@@ -63,6 +64,7 @@ function Select({
 export function Catalog() {
   const navigate = useNavigate();
   const { contacted } = useApp();
+  const isMobile = useIsMobile();
   const [q, setQ] = useState('');
   const [pipelineOnly, setPipelineOnly] = useState(false);
   const [relevancia, setRelevancia] = useState('');
@@ -75,6 +77,8 @@ export function Catalog() {
   const [view, setView] = useState<'table' | 'cards'>('table');
   const [sortKey, setSortKey] = useState<SortKey>('priority');
   const [sortDir, setSortDir] = useState<1 | -1>(1);
+  // En celular siempre se muestran tarjetas (la tabla ancha no es usable).
+  const effectiveView: 'table' | 'cards' = isMobile ? 'cards' : view;
 
   const sectors = uniqueSorted(enrichedProjects.map((p) => p.sector));
   const regions = uniqueSorted(enrichedProjects.map((p) => p.region));
@@ -146,7 +150,7 @@ export function Catalog() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex overflow-hidden rounded border border-steel-300">
+          <div className="hidden overflow-hidden rounded border border-steel-300 sm:flex">
             <button
               onClick={() => setView('table')}
               className={`px-3 py-1.5 text-sm font-medium ${view === 'table' ? 'bg-navy-900 text-white' : 'bg-white text-steel-600'}`}
@@ -196,12 +200,12 @@ export function Catalog() {
       </button>
 
       {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-steel-200 bg-white p-3 shadow-sm">
+      <div className="grid grid-cols-2 items-center gap-2 rounded-lg border border-steel-200 bg-white p-3 shadow-sm sm:flex sm:flex-wrap">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar proyecto, mandante, componente pipeline…"
-          className="min-w-52 flex-1 rounded border border-steel-300 px-3 py-1.5 text-sm outline-none focus:border-amber-500"
+          placeholder="Buscar proyecto, mandante, componente…"
+          className="col-span-2 w-full rounded border border-steel-300 px-3 py-1.5 text-sm outline-none focus:border-amber-500 sm:w-auto sm:min-w-52 sm:flex-1"
         />
         <Select
           value={relevancia}
@@ -246,14 +250,14 @@ export function Catalog() {
               setPriority('');
               setInvRange('');
             }}
-            className="text-sm font-medium text-steel-500 underline hover:text-navy-800"
+            className="col-span-2 text-sm font-medium text-steel-500 underline hover:text-navy-800 sm:col-span-1"
           >
             Limpiar
           </button>
         )}
       </div>
 
-      {view === 'table' ? (
+      {effectiveView === 'table' ? (
         <div className="overflow-x-auto rounded-lg border border-steel-200 bg-white shadow-sm">
           <table className="w-full min-w-[980px] border-collapse">
             <thead className="border-b-2 border-navy-900 bg-steel-50">
