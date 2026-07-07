@@ -19,7 +19,15 @@ export function Fab() {
   ];
 
   return (
-    <div className="fixed bottom-5 right-4 z-30 flex flex-col items-end gap-3 md:hidden">
+    <div className="fab-safe fixed right-4 z-30 flex flex-col items-end gap-3 md:hidden">
+      {open && (
+        <button
+          aria-hidden="true"
+          tabIndex={-1}
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 -z-10 cursor-default bg-black/20"
+        />
+      )}
       {open &&
         actions.map((a) => (
           <button
@@ -28,9 +36,9 @@ export function Fab() {
               a.onClick();
               setOpen(false);
             }}
-            className="flex items-center gap-2 rounded-full bg-white py-2 pl-3 pr-4 text-sm font-semibold text-navy-900 shadow-lg dark:bg-navy-800 dark:text-white"
+            className="flex min-h-12 items-center gap-2 rounded-full bg-white py-2 pl-4 pr-5 text-base font-semibold text-navy-900 shadow-lg active:bg-steel-100 dark:bg-navy-800 dark:text-white dark:active:bg-navy-700"
           >
-            <span className="text-base">{a.icon}</span>
+            <span className="text-lg">{a.icon}</span>
             {a.label}
           </button>
         ))}

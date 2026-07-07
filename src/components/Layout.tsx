@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useDarkMode } from '../lib/useDarkMode';
@@ -42,13 +42,26 @@ function linkClass(isActive: boolean, pipe: boolean): string {
   }`;
 }
 
+/** Estilo de link táctil grande dentro del drawer móvil (altura mínima 56 px). */
+function drawerLinkClass(isActive: boolean, pipe: boolean): string {
+  return `flex min-h-14 items-center gap-3 rounded-xl px-4 text-lg font-semibold transition-colors ${
+    isActive
+      ? pipe
+        ? 'bg-sky-500 text-navy-950'
+        : 'bg-amber-500 text-navy-950'
+      : pipe
+        ? 'bg-navy-900 text-sky-300 active:bg-navy-800'
+        : 'bg-navy-900 text-steel-100 active:bg-navy-800'
+  }`;
+}
+
 function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
   return (
     <button
       onClick={toggle}
       aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
       title={dark ? 'Modo claro' : 'Modo oscuro'}
-      className="flex h-10 w-10 items-center justify-center rounded border border-navy-600 text-steel-300 hover:bg-navy-800 hover:text-white"
+      className="flex h-11 w-11 items-center justify-center rounded border border-navy-600 text-steel-300 hover:bg-navy-800 hover:text-white"
     >
       {dark ? (
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
@@ -64,6 +77,89 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
   );
 }
 
+/** Panel de navegación a pantalla completa para móvil (drawer). */
+function MobileDrawer({
+  open,
+  onClose,
+  navLinks,
+  dark,
+  toggle,
+  onLogout,
+}: {
+  open: boolean;
+  onClose: () => void;
+  navLinks: { to: string; label: string; end?: boolean; pipe: boolean }[];
+  dark: boolean;
+  toggle: () => void;
+  onLogout: () => void;
+}) {
+  useEffect(() => {
+    document.body.classList.toggle('drawer-open', open);
+    return () => document.body.classList.remove('drawer-open');
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Menú de navegación">
+      <div className="safe-top safe-x flex h-full flex-col bg-navy-950">
+        {/* Cabecera del drawer */}
+        <div className="flex items-center justify-between px-4 py-4">
+          <Logo />
+          <button
+            onClick={onClose}
+            aria-label="Cerrar menú"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-navy-700 text-white active:bg-navy-800"
+          >
+            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Links grandes */}
+        <nav className="safe-bottom flex-1 space-y-2.5 overflow-y-auto px-4 pb-6 pt-2">
+          {navLinks.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={l.end}
+              onClick={onClose}
+              className={({ isActive }) => drawerLinkClass(isActive, l.pipe)}
+            >
+              {l.pipe && <PipeIcon className="h-6 w-6" />}
+              {l.label}
+            </NavLink>
+          ))}
+
+          <div className="my-4 border-t border-navy-800" />
+
+          <button
+            onClick={() => {
+              onClose();
+              toggle();
+            }}
+            className="flex min-h-14 w-full items-center gap-3 rounded-xl bg-navy-900 px-4 text-lg font-semibold text-steel-100 active:bg-navy-800"
+          >
+            <span className="text-2xl">{dark ? '☀️' : '🌙'}</span>
+            {dark ? 'Modo claro' : 'Modo oscuro'}
+          </button>
+          <button
+            onClick={() => {
+              onClose();
+              onLogout();
+            }}
+            className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-navy-700 px-4 text-lg font-semibold text-steel-200 active:bg-navy-800"
+          >
+            <span className="text-2xl">⏻</span>
+            Cerrar sesión
+          </button>
+        </nav>
+      </div>
+    </div>
+  );
+}
+
 export function Layout() {
   const { logout, usuario } = useApp();
   const { dark, toggle } = useDarkMode();
@@ -73,6 +169,11 @@ export function Layout() {
 
   const navLinks = usuario?.rol === 'admin' ? [...links, { to: '/registro', label: 'Usuarios', pipe: false }] : links;
 
+  // Cierra el drawer al cambiar de ruta (por si se navega desde otro lugar).
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   async function doLogout() {
     await logout();
     navigate('/login');
@@ -80,7 +181,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-navy-800 bg-navy-900 shadow-md">
+      <header className="safe-top safe-x sticky top-0 z-20 border-b border-navy-800 bg-navy-900 shadow-md">
         <div className="mx-auto max-w-7xl px-4">
           {/* Barra superior */}
           <div className="flex items-center justify-between gap-3 py-3">
@@ -108,60 +209,37 @@ export function Layout() {
               </button>
             </div>
 
-            {/* Controles en móvil */}
-            <div className="flex items-center gap-2 md:hidden">
-              <ThemeToggle dark={dark} toggle={toggle} />
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label="Menú"
-                aria-expanded={menuOpen}
-                className="flex h-10 w-10 items-center justify-center rounded border border-navy-600 text-white"
-              >
-                {menuOpen ? (
-                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                    <path d="M6 6l12 12M18 6L6 18" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                    <path d="M4 7h16M4 12h16M4 17h16" />
-                  </svg>
-                )}
-              </button>
-            </div>
+            {/* Botón hamburguesa en móvil (44 px) */}
+            <button
+              onClick={() => setMenuOpen(true)}
+              aria-label="Abrir menú"
+              aria-expanded={menuOpen}
+              className="flex h-11 w-11 items-center justify-center rounded border border-navy-600 text-white active:bg-navy-800 md:hidden"
+            >
+              <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </button>
           </div>
-
-          {/* Menú desplegable en móvil */}
-          {menuOpen && (
-            <nav className="flex flex-col gap-1 border-t border-navy-800 pb-3 pt-2 md:hidden">
-              {navLinks.map((l) => (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  end={l.end}
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) => `${linkClass(isActive, l.pipe)} text-base`}
-                >
-                  {l.pipe && <PipeIcon className="h-5 w-5" />}
-                  {l.label}
-                </NavLink>
-              ))}
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  doLogout();
-                }}
-                className="mt-1 rounded border border-navy-600 px-3 py-2 text-left text-base text-steel-300 hover:bg-navy-800 hover:text-white"
-              >
-                Cerrar sesión
-              </button>
-            </nav>
-          )}
         </div>
       </header>
-      <main className="mx-auto max-w-7xl overflow-x-hidden px-3 py-5 sm:px-4 sm:py-6" key={location.pathname}>
+
+      <MobileDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        navLinks={navLinks}
+        dark={dark}
+        toggle={toggle}
+        onLogout={doLogout}
+      />
+
+      <main
+        className="safe-x mx-auto max-w-7xl overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 sm:pt-6 md:pb-6"
+        key={location.pathname}
+      >
         <Outlet />
       </main>
-      <footer className="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-steel-400">
+      <footer className="safe-x safe-bottom mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-steel-400">
         Plataforma interna de inteligencia comercial · Datos de investigación con corte 7-jul-2026 · Las carteras son
         proyecciones, no inversión garantizada.
       </footer>

@@ -102,30 +102,32 @@ export function Dashboard() {
       </div>
 
       {/* Filtro principal Pipeline / Otros / Todos */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-steel-200 bg-white p-2 shadow-sm">
-        <span className="px-2 text-xs font-bold uppercase tracking-wide text-steel-400">Ver:</span>
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setScope(t.key)}
-            className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-semibold transition-colors ${
-              scope === t.key
-                ? t.key === 'pipeline'
-                  ? 'bg-sky-700 text-white'
-                  : 'bg-navy-900 text-white'
-                : 'text-steel-600 hover:bg-steel-100'
-            }`}
-          >
-            {t.icon && <PipeIcon className="h-4 w-4" />}
-            {t.label}
-          </button>
-        ))}
-        <Link
-          to="/pipeline"
-          className="ml-auto text-xs font-semibold text-sky-700 hover:underline"
-        >
-          Ir a Oportunidades Pipeline →
-        </Link>
+      <div className="rounded-lg border border-steel-200 bg-white p-3 shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-bold uppercase tracking-wide text-steel-400">Ver:</span>
+          <Link to="/pipeline" className="text-xs font-semibold text-sky-700 hover:underline">
+            Ir a Oportunidades Pipeline →
+          </Link>
+        </div>
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setScope(t.key)}
+              aria-pressed={scope === t.key}
+              className={`flex min-h-12 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+                scope === t.key
+                  ? t.key === 'pipeline'
+                    ? 'bg-sky-700 text-white shadow-sm'
+                    : 'bg-navy-900 text-white shadow-sm'
+                  : 'border border-steel-200 bg-steel-50 text-steel-700 active:bg-steel-100'
+              }`}
+            >
+              {t.icon && <PipeIcon className="h-5 w-5" />}
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* KPIs (scoped) */}

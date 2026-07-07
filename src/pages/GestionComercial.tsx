@@ -158,19 +158,19 @@ function RealMobileCard({ c, current }: { c: (typeof contactosReales)[number]; c
           {c.projectIds.length > 3 && <span className="text-[11px] text-steel-400">+{c.projectIds.length - 3}</span>}
         </div>
       )}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2.5">
         {tel && (
-          <a href={tel} className="rounded bg-navy-900 px-3 py-1.5 text-xs font-bold text-white">
+          <a href={tel} className="flex min-h-11 items-center rounded-lg bg-navy-900 px-4 py-2.5 text-sm font-bold text-white active:bg-navy-800">
             Llamar
           </a>
         )}
         {wa && (
-          <a href={wa} target="_blank" rel="noopener noreferrer" className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white">
+          <a href={wa} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white active:bg-emerald-700">
             WhatsApp
           </a>
         )}
         {c.email && (
-          <a href={`mailto:${c.email}`} className="rounded border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700">
+          <a href={`mailto:${c.email}`} className="flex min-h-11 items-center rounded-lg border border-sky-300 bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-700 active:bg-sky-100">
             Email
           </a>
         )}
