@@ -201,6 +201,29 @@ export interface Activity {
   nota: string;
   /** Usuario que registró la actividad. */
   usuario: string;
+  /** Monto estimado/ofertado en CLP (propuesta / negociación / adjudicado). */
+  monto?: number | null;
+  /** Fecha ISO de la reunión agendada. */
+  fechaReunion?: string | null;
+  /** Motivo del descarte (cuando to === 'descartado'). */
+  motivoDescarte?: string | null;
+}
+
+// ══════════════ Usuarios y roles (autenticación) ══════════════
+
+export type Rol = 'director' | 'comercial' | 'admin';
+
+export const ROL_LABEL: Record<Rol, string> = {
+  director: 'Director',
+  comercial: 'Comercial',
+  admin: 'Administrador',
+};
+
+export interface Usuario {
+  id: string;
+  email: string;
+  nombre: string;
+  rol: Rol;
 }
 
 /** Proyecto con la clasificación pipeline y los contactos clave fusionados. */

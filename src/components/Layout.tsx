@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useDarkMode } from '../lib/useDarkMode';
 import { PipeIcon } from './ui';
+import { Fab } from './Fab';
+import { InstallPrompt } from './InstallPrompt';
 
 const links = [
   { to: '/', label: 'Dashboard', end: true, pipe: false },
@@ -39,14 +42,39 @@ function linkClass(isActive: boolean, pipe: boolean): string {
   }`;
 }
 
+function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
+  return (
+    <button
+      onClick={toggle}
+      aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      title={dark ? 'Modo claro' : 'Modo oscuro'}
+      className="flex h-10 w-10 items-center justify-center rounded border border-navy-600 text-steel-300 hover:bg-navy-800 hover:text-white"
+    >
+      {dark ? (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export function Layout() {
-  const { logout } = useApp();
+  const { logout, usuario } = useApp();
+  const { dark, toggle } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  function doLogout() {
-    logout();
+  const navLinks = usuario?.rol === 'admin' ? [...links, { to: '/registro', label: 'Usuarios', pipe: false }] : links;
+
+  async function doLogout() {
+    await logout();
     navigate('/login');
   }
 
@@ -62,7 +90,7 @@ export function Layout() {
 
             {/* Nav en desktop/tablet */}
             <nav className="hidden flex-1 flex-wrap items-center gap-1 md:flex">
-              {links.map((l) => (
+              {navLinks.map((l) => (
                 <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => linkClass(isActive, l.pipe)}>
                   {l.pipe && <PipeIcon className="h-4 w-4" />}
                   {l.label}
@@ -70,36 +98,42 @@ export function Layout() {
               ))}
             </nav>
 
-            <button
-              onClick={doLogout}
-              className="hidden rounded border border-navy-600 px-3 py-1.5 text-sm text-steel-300 transition-colors hover:bg-navy-800 hover:text-white md:block"
-            >
-              Cerrar sesión
-            </button>
+            <div className="hidden items-center gap-2 md:flex">
+              <ThemeToggle dark={dark} toggle={toggle} />
+              <button
+                onClick={doLogout}
+                className="rounded border border-navy-600 px-3 py-1.5 text-sm text-steel-300 transition-colors hover:bg-navy-800 hover:text-white"
+              >
+                Cerrar sesión
+              </button>
+            </div>
 
-            {/* Botón hamburguesa en móvil */}
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label="Menú"
-              aria-expanded={menuOpen}
-              className="flex h-10 w-10 items-center justify-center rounded border border-navy-600 text-white md:hidden"
-            >
-              {menuOpen ? (
-                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                  <path d="M6 6l12 12M18 6L6 18" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                  <path d="M4 7h16M4 12h16M4 17h16" />
-                </svg>
-              )}
-            </button>
+            {/* Controles en móvil */}
+            <div className="flex items-center gap-2 md:hidden">
+              <ThemeToggle dark={dark} toggle={toggle} />
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-label="Menú"
+                aria-expanded={menuOpen}
+                className="flex h-10 w-10 items-center justify-center rounded border border-navy-600 text-white"
+              >
+                {menuOpen ? (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                    <path d="M4 7h16M4 12h16M4 17h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Menú desplegable en móvil */}
           {menuOpen && (
             <nav className="flex flex-col gap-1 border-t border-navy-800 pb-3 pt-2 md:hidden">
-              {links.map((l) => (
+              {navLinks.map((l) => (
                 <NavLink
                   key={l.to}
                   to={l.to}
@@ -131,6 +165,8 @@ export function Layout() {
         Plataforma interna de inteligencia comercial · Datos de investigación con corte 7-jul-2026 · Las carteras son
         proyecciones, no inversión garantizada.
       </footer>
+      <Fab />
+      <InstallPrompt />
     </div>
   );
 }

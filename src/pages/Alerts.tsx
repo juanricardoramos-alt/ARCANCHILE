@@ -14,7 +14,7 @@ export function Alerts() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-navy-900">Alertas y licitaciones activas</h1>
+        <h1 className="text-2xl font-black text-navy-900 dark:text-white">Alertas y licitaciones activas</h1>
         <p className="text-sm text-steel-500">
           Procesos abiertos o recientes a jul-2026 — verificar estado vigente antes de movilizar recursos
         </p>

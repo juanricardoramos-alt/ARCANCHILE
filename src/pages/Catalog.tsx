@@ -144,7 +144,7 @@ export function Catalog() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-navy-900">Catálogo de proyectos</h1>
+          <h1 className="text-2xl font-black text-navy-900 dark:text-white">Catálogo de proyectos</h1>
           <p className="text-sm text-steel-500">
             {filtered.length} de {enrichedProjects.length} oportunidades · {pipelineCount} son core Pipeline/Ductos · corte 7-jul-2026
           </p>

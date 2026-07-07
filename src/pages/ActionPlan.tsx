@@ -22,7 +22,7 @@ export function ActionPlan() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-black text-navy-900">Plan de acción comercial</h1>
+        <h1 className="text-2xl font-black text-navy-900 dark:text-white">Plan de acción comercial</h1>
         <p className="text-sm text-steel-500">Plan de 90 días + checklist de habilitación + tabla maestra priorizada</p>
       </div>
 

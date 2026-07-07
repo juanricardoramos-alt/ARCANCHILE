@@ -27,7 +27,7 @@ export function Companies() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-black text-navy-900">Directorio de empresas</h1>
+        <h1 className="text-2xl font-black text-navy-900 dark:text-white">Directorio de empresas</h1>
         <p className="text-sm text-steel-500">
           Mandantes, EPCs y organismos con sus vías de registro de proveedores · {list.length} de {companies.length} entidades
         </p>

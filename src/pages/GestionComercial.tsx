@@ -16,14 +16,26 @@ import type { ContactoNivel, ContactSector, CrmState } from '../data/types';
 import { CRM_COLOR } from '../lib/crm';
 import { useApp } from '../context/AppContext';
 import { ContactoNivelBadge, KpiCard, LinkedInIcon, OrigenBadge, PipeBadge, SectionTitle } from '../components/ui';
-import { CrmManager } from '../components/CrmManager';
+import { CrmManager, CrmModal } from '../components/CrmManager';
 import { CrmActions } from '../components/CrmActions';
+import { useSwipe } from '../lib/useSwipe';
 
 const FUNNEL = CRM_STATES.map((state) => ({ state, color: CRM_COLOR[state] }));
 const NIVELES: ContactoNivel[] = ['decisor', 'influenciador', 'tecnico', 'acceso'];
 const SECTORES: ContactSector[] = ['MINERO', 'EPC', 'ENERGIA', 'OIL_GAS', 'PIPELINE', 'AGUA', 'CELULOSA', 'INSPECCION', 'INDUSTRIAL'];
 
 const EN_GESTION: CrmState[] = ['contactado', 'respuesta', 'reunion_agendada', 'reunion_realizada', 'propuesta', 'negociacion'];
+
+/** Orden lineal del embudo para avanzar/retroceder con swipe (descartado se maneja en el modal). */
+const ADVANCE: CrmState[] = ['pendiente', 'contactado', 'respuesta', 'reunion_agendada', 'reunion_realizada', 'propuesta', 'negociacion', 'adjudicado'];
+function nextState(s: CrmState): CrmState {
+  const i = ADVANCE.indexOf(s);
+  return i < 0 || i >= ADVANCE.length - 1 ? s : ADVANCE[i + 1];
+}
+function prevState(s: CrmState): CrmState {
+  const i = ADVANCE.indexOf(s);
+  return i <= 0 ? s : ADVANCE[i - 1];
+}
 
 function emptyCounts(): Record<CrmState, number> {
   return Object.fromEntries(CRM_STATES.map((s) => [s, 0])) as Record<CrmState, number>;
@@ -37,10 +49,10 @@ export function GestionComercial() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-navy-900">Gestión comercial · CRM de contactos</h1>
+          <h1 className="text-2xl font-black text-navy-900 dark:text-white">Gestión comercial · CRM de contactos</h1>
           <p className="text-sm text-steel-500">
             {mode === 'reales'
-              ? `${contactosReales.length} contactos reales de ARCANCHILE (BBDD LinkedIn + evento Pipeline II) · gestionando como ${usuario}`
+              ? `${contactosReales.length} contactos reales de ARCANCHILE (BBDD LinkedIn + evento Pipeline II) · gestionando como ${usuario?.nombre ?? 'Usuario'}`
               : 'Perfiles de cargos objetivo por proyecto (cuándo no hay contacto real, a quién buscar)'}
           </p>
         </div>
@@ -94,9 +106,100 @@ function Funnel({ counts }: { counts: Record<CrmState, number> }) {
   );
 }
 
+// Tarjeta de contacto real en móvil, con swipe para avanzar/retroceder de estado.
+function RealMobileCard({ c, current }: { c: (typeof contactosReales)[number]; current: CrmState }) {
+  const { logActivity, usuario } = useApp();
+  const [swipeTo, setSwipeTo] = useState<CrmState | null>(null);
+  const [flash, setFlash] = useState<'next' | 'prev' | null>(null);
+  const tel = telHref(c.fono);
+  const wa = waHref(c.fono);
+  const key = realKey(c);
+
+  function trigger(dir: 'next' | 'prev') {
+    const target = dir === 'next' ? nextState(current) : prevState(current);
+    if (target === current) return;
+    setFlash(dir);
+    setSwipeTo(target);
+  }
+  const swipe = useSwipe({ onSwipeRight: () => trigger('next'), onSwipeLeft: () => trigger('prev') });
+
+  return (
+    <div
+      {...swipe}
+      className={`rounded-lg border bg-white p-3 shadow-sm transition-colors dark:bg-navy-900 ${
+        flash === 'next' ? 'border-emerald-300' : flash === 'prev' ? 'border-amber-300' : 'border-steel-200 dark:border-navy-700'
+      }`}
+      onAnimationEnd={() => setFlash(null)}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-900 text-[11px] font-bold text-white">{c.prioridad}</span>
+            <span className="font-bold text-navy-900 dark:text-white">{c.nombre}</span>
+            <LinkedInIcon className="h-3.5 w-3.5 text-sky-700" />
+          </div>
+          <div className="mt-0.5 text-xs text-steel-600 dark:text-steel-300">{c.cargo}</div>
+          <div className="text-xs text-steel-500">
+            {c.empresa} · {SECTOR_LABEL[c.sector]}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <ContactoNivelBadge nivel={c.nivel} />
+          <OrigenBadge origen={c.origen} />
+        </div>
+      </div>
+      {c.projectIds.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {c.projectIds.slice(0, 3).map((pid) => (
+            <Link key={pid} to={`/proyectos/${pid}`} className="rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
+              {pid}
+            </Link>
+          ))}
+          {c.projectIds.length > 3 && <span className="text-[11px] text-steel-400">+{c.projectIds.length - 3}</span>}
+        </div>
+      )}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {tel && (
+          <a href={tel} className="rounded bg-navy-900 px-3 py-1.5 text-xs font-bold text-white">
+            Llamar
+          </a>
+        )}
+        {wa && (
+          <a href={wa} target="_blank" rel="noopener noreferrer" className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white">
+            WhatsApp
+          </a>
+        )}
+        {c.email && (
+          <a href={`mailto:${c.email}`} className="rounded border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700">
+            Email
+          </a>
+        )}
+      </div>
+      <div className="mt-3 border-t border-steel-100 pt-2 dark:border-navy-700">
+        <CrmManager contactKey={key} title={c.nombre} subtitle={`${c.cargo} · ${c.empresa}`} />
+      </div>
+      {swipeTo && (
+        <CrmModal
+          contactKey={key}
+          title={c.nombre}
+          subtitle={`${c.cargo} · ${c.empresa}`}
+          current={current}
+          presetTo={swipeTo}
+          usuario={usuario?.nombre ?? 'Usuario'}
+          onClose={() => setSwipeTo(null)}
+          onSave={(to, nota, extra) => {
+            logActivity(key, to, nota, extra);
+            setSwipeTo(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 // ───────────────────────── Contactos reales (BBDD) ─────────────────────────
 function RealesView() {
-  const { crmState } = useApp();
+  const { crmState, crmLoading, crmError } = useApp();
   const [q, setQ] = useState('');
   const [origen, setOrigen] = useState('');
   const [sector, setSector] = useState('');
@@ -139,6 +242,17 @@ function RealesView() {
 
   return (
     <>
+      {crmLoading && (
+        <div className="flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-sky-300 border-t-sky-600" />
+          Sincronizando gestión con la base de datos…
+        </div>
+      )}
+      {crmError && (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          Problema de sincronización: {crmError}
+        </div>
+      )}
       <div className="flex justify-end">
         <button
           onClick={() => exportRealContactsCsv(filtered, stateOf)}
@@ -209,61 +323,12 @@ function RealesView() {
 
       {/* Tarjetas en celular */}
       <div className="space-y-3 md:hidden">
-        {filtered.map((c) => {
-          const tel = telHref(c.fono);
-          const wa = waHref(c.fono);
-          return (
-            <div key={c.id} className="rounded-lg border border-steel-200 bg-white p-3 shadow-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-900 text-[11px] font-bold text-white">{c.prioridad}</span>
-                    <span className="font-bold text-navy-900">{c.nombre}</span>
-                    <LinkedInIcon className="h-3.5 w-3.5 text-sky-700" />
-                  </div>
-                  <div className="mt-0.5 text-xs text-steel-600">{c.cargo}</div>
-                  <div className="text-xs text-steel-500">
-                    {c.empresa} · {SECTOR_LABEL[c.sector]}
-                  </div>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <ContactoNivelBadge nivel={c.nivel} />
-                  <OrigenBadge origen={c.origen} />
-                </div>
-              </div>
-              {c.projectIds.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {c.projectIds.slice(0, 3).map((pid) => (
-                    <Link key={pid} to={`/proyectos/${pid}`} className="rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-medium text-sky-700">
-                      {pid}
-                    </Link>
-                  ))}
-                  {c.projectIds.length > 3 && <span className="text-[11px] text-steel-400">+{c.projectIds.length - 3}</span>}
-                </div>
-              )}
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {tel && (
-                  <a href={tel} className="rounded bg-navy-900 px-3 py-1.5 text-xs font-bold text-white">
-                    Llamar
-                  </a>
-                )}
-                {wa && (
-                  <a href={wa} target="_blank" rel="noopener noreferrer" className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white">
-                    WhatsApp
-                  </a>
-                )}
-                {c.email && (
-                  <a href={`mailto:${c.email}`} className="rounded border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700">
-                    Email
-                  </a>
-                )}
-              </div>
-              <div className="mt-3 border-t border-steel-100 pt-2">
-                <CrmManager contactKey={realKey(c)} title={c.nombre} subtitle={`${c.cargo} · ${c.empresa}`} />
-              </div>
-            </div>
-          );
-        })}
+        <p className="text-center text-[11px] text-steel-400">
+          Desliza una tarjeta → para avanzar de estado · ← para retroceder
+        </p>
+        {filtered.map((c) => (
+          <RealMobileCard key={c.id} c={c} current={stateOf(c)} />
+        ))}
         {filtered.length === 0 && (
           <p className="rounded-lg border border-steel-200 bg-white py-8 text-center text-sm text-steel-500">
             No hay contactos para los filtros seleccionados.

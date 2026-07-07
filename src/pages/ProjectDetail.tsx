@@ -66,7 +66,7 @@ export function ProjectDetail() {
               {isPipeline && <PipeBadge />}
               {project.unconfirmed && <UnconfirmedFlag />}
             </div>
-            <h1 className="mt-3 text-2xl font-black leading-tight text-navy-900">{project.name}</h1>
+            <h1 className="mt-3 text-2xl font-black leading-tight text-navy-900 dark:text-white">{project.name}</h1>
             <p className="mt-1 text-steel-600">{project.owner}</p>
           </div>
           <button

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Modo oscuro por clase: las utilidades `dark:` responden a `.dark` en <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-navy-50: #eef4fa;
   --color-navy-100: #d8e5f2;
@@ -33,4 +36,14 @@ html {
 body {
   background-color: var(--color-steel-100);
   color: var(--color-steel-800);
+}
+
+html.dark body {
+  background-color: var(--color-navy-950);
+  color: var(--color-steel-200);
+}
+
+/* Área de contenido en modo oscuro. */
+html.dark main {
+  background-color: var(--color-navy-950);
 }

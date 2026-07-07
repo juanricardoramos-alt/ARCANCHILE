@@ -2,3 +2,11 @@ node_modules/
 dist/
 *.local
 .smoke.mjs
+
+# Variables de entorno (secretas) — usa .env.example como plantilla
+.env
+.env.*
+!.env.example
+
+# Artefactos PWA de desarrollo
+dev-dist/

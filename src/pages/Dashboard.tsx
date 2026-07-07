@@ -94,7 +94,7 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-navy-900">Dashboard de mercado 2026-2030</h1>
+        <h1 className="text-2xl font-black text-navy-900 dark:text-white">Dashboard de mercado 2026-2030</h1>
         <p className="text-sm text-steel-500">
           Cartera Cochilco 2025-2034: US$104.549M (+25,7%, récord en 11 años) · Catastro CBC: 853 proyectos por US$87.702M ·
           Corte de investigación: 7-jul-2026
