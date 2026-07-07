@@ -2,9 +2,18 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { pipelineActive } from '../lib/stats';
 import { fmtMusd, totalInvestment } from '../lib/stats';
+import { primaryContact } from '../lib/contactos';
 import { PIPELINE_SERVICE_ORDER } from '../data/types';
 import type { PipelineServiceCategory, Priority } from '../data/types';
-import { KpiCard, NormativaChip, PipeIcon, PriorityBadge, RelevanceIndicator, StageBadge } from '../components/ui';
+import {
+  ContactoNivelBadge,
+  KpiCard,
+  NormativaChip,
+  PipeIcon,
+  PriorityBadge,
+  RelevanceIndicator,
+  StageBadge,
+} from '../components/ui';
 
 const SERVICE_DESC: Record<PipelineServiceCategory, string> = {
   'Diseño / Ingeniería de ductos':
@@ -110,6 +119,7 @@ export function Pipeline() {
                       <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Relev.</th>
                       <th className="px-3 py-2 text-right text-xs font-bold uppercase text-navy-800">Inversión</th>
                       <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Cuándo se necesita</th>
+                      <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Contacto prioritario</th>
                       <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Normativas</th>
                     </tr>
                   </thead>
@@ -135,6 +145,22 @@ export function Pipeline() {
                           <StageBadge stage={p.stage} />
                           <div className="mt-1">{p.timeline}</div>
                         </td>
+                        <td className="max-w-56 px-3 py-2 text-xs text-steel-600">
+                          {(() => {
+                            const pc = primaryContact(p);
+                            return pc ? (
+                              <>
+                                <span className="font-semibold text-navy-800">{pc.cargo}</span>
+                                <div className="mt-1 flex flex-wrap items-center gap-1">
+                                  <ContactoNivelBadge nivel={pc.nivel} />
+                                  <span className="text-steel-500">{pc.empresa}</span>
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-steel-400">—</span>
+                            );
+                          })()}
+                        </td>
                         <td className="max-w-52 px-3 py-2">
                           <div className="flex flex-wrap gap-1">
                             {p.normativas.slice(0, 4).map((n) => (
@@ -149,7 +175,7 @@ export function Pipeline() {
                     ))}
                     {g.list.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-3 py-6 text-center text-sm text-steel-500">
+                        <td colSpan={7} className="px-3 py-6 text-center text-sm text-steel-500">
                           Sin oportunidades en esta categoría.
                         </td>
                       </tr>

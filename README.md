@@ -26,11 +26,16 @@ La clasificación vive en `src/data/pipelineClassification.ts` y se fusiona con 
 |---|---|
 | Dashboard | Filtro principal **Todos / Core Pipeline / Otros**; KPIs separados Pipeline vs Otros; inversión por sector, dona por estado, **barra apilada Pipeline vs Otros por sector**, top 10 (coloreado por categoría) y mapa esquemático de Chile |
 | Proyectos | Catálogo con **toggle prominente "Solo Pipeline/Ductos"**, filtros (relevancia, sector, región, servicio, estado, prioridad, inversión), badge/borde azul de pipeline, **columna Relevancia**, y chips de servicio de ductos al filtrar por pipeline; vista tabla/tarjetas, orden por columnas y exportación CSV (con columnas de clasificación) |
-| Pipeline | **Página dedicada al core**: oportunidades de ductos organizadas por tipo de servicio (Diseño, END, QA/QC, ITO, Inspección en servicio, Comisionamiento), con relevancia, cronograma y normativas |
-| Detalle | Ficha completa, **sección "Componente Pipeline/Ductos"** con normativas y servicios de ductos, servicios ARCANCHILE, fuente, relacionados y botón "Marcar como contactado" (persistente) |
+| Pipeline | **Página dedicada al core**: oportunidades de ductos organizadas por tipo de servicio (Diseño, END, QA/QC, ITO, Inspección en servicio, Comisionamiento), con relevancia, cronograma, **contacto prioritario** y normativas |
+| Gestión Comercial | **CRM de contactos**: cargos clave por proyecto con filtros (empresa, nivel, prioridad), contadores y embudo (Pendiente → Contactado → Reunión → Propuesta → Seguimiento), estado por contacto persistente y exportación CSV |
+| Detalle | Ficha completa, **sección "Componente Pipeline/Ductos"**, **sección "Contactos clave para gestión comercial"** (tabla por prioridad con nivel, canal, objetivo, LinkedIn y estado CRM), servicios ARCANCHILE, fuente, relacionados y botón "Marcar como contactado" |
 | Empresas | Directorio de mandantes, EPCs y organismos con vías de inscripción de proveedores y links a portales |
 | Plan de Acción | Timeline de 90 días, checklist interactivo (persistente) y tabla maestra A/B/C con filtros (marca los proyectos pipeline) |
 | Alertas | Licitaciones activas con la alerta ENAP destacada como prioritaria y plan de monitoreo |
+
+### Contactos clave / gestión comercial
+
+Cada proyecto lleva `contactosClave: ContactoClave[]` con **cargos genéricos** (no personas reales) adaptados al tipo de empresa. Se generan a partir de plantillas por arquetipo (`minero`, `epc`, `energia`, `enap`, `gas`, `estatal`, `industrial`) mapeadas en `src/data/contactos.ts`; los proyectos con mandante **y** EPC conocida incluyen contactos de ambas. Cada contacto tiene `cargo`, `departamento`, `nivel` (decisor/influenciador/técnico/acceso), `prioridad` (1-3), `objetivo` de la reunión y `canalSugerido`. El estado CRM (Pendiente/Contactado/Reunión agendada/Propuesta enviada/En seguimiento) se guarda por contacto en `localStorage`.
 
 ---
 

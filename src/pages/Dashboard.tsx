@@ -25,9 +25,12 @@ import {
   topByInvestment,
   totalInvestment,
 } from '../lib/stats';
-import type { Categoria } from '../data/types';
+import { allContacts } from '../lib/contactos';
+import type { Categoria, CrmState } from '../data/types';
+import { CRM_LABEL } from '../data/types';
 import { KpiCard, PipeIcon, SectionTitle } from '../components/ui';
 import { ChileMap } from '../components/ChileMap';
+import { useApp } from '../context/AppContext';
 
 const STAGE_COLORS: Record<string, string> = {
   'Estudio / Prefactibilidad': '#94a3b8',
@@ -47,8 +50,23 @@ type Scope = 'todos' | Categoria;
 const PIPE_BLUE = '#0369a1';
 const OTROS_GRAY = '#94a3b8';
 
+const FUNNEL: { state: CrmState; color: string }[] = [
+  { state: 'pendiente', color: '#94a3b8' },
+  { state: 'contactado', color: '#0ea5e9' },
+  { state: 'reunion', color: '#f59e0b' },
+  { state: 'propuesta', color: '#8b5cf6' },
+  { state: 'seguimiento', color: '#10b981' },
+];
+
 export function Dashboard() {
   const [scope, setScope] = useState<Scope>('todos');
+  const { crm } = useApp();
+
+  // CRM: contactos prioridad 1 (los primeros a gestionar)
+  const p1Contacts = allContacts.filter((f) => f.c.prioridad === 1);
+  const crmCounts: Record<CrmState, number> = { pendiente: 0, contactado: 0, reunion: 0, propuesta: 0, seguimiento: 0 };
+  for (const f of p1Contacts) crmCounts[crm[f.key] ?? 'pendiente'] += 1;
+  const maxFunnel = Math.max(1, ...FUNNEL.map((s) => crmCounts[s.state]));
 
   const inScope = (categoria: Categoria) => scope === 'todos' || scope === categoria;
   const scActive = activeProjects.filter((p) => inScope(p.categoria));
@@ -177,6 +195,36 @@ export function Dashboard() {
             Transmisión eléctrica, BESS, obras civiles, puertos, edificación y monitoreo geotécnico sin ductos. Se rastrean
             para alianzas y subcontratos, pero no son el foco de ARCANCHILE.
           </p>
+        </div>
+      </div>
+
+      {/* Gestión comercial: contactos por gestionar + mini funnel */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-lg border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm">
+          <div className="text-xs font-semibold uppercase tracking-wide text-steel-500">Contactos por gestionar</div>
+          <div className="mt-1 text-4xl font-black text-navy-900">{crmCounts.pendiente}</div>
+          <div className="mt-1 text-xs text-steel-500">decisores prioridad 1 aún pendientes</div>
+          <Link to="/gestion-comercial" className="mt-3 inline-block text-xs font-bold text-amber-600 hover:underline">
+            Ir a gestión comercial →
+          </Link>
+        </div>
+        <div className="rounded-lg border border-steel-200 bg-white p-4 shadow-sm md:col-span-2">
+          <SectionTitle>Embudo de gestión comercial · contactos prioridad 1</SectionTitle>
+          <div className="space-y-1.5">
+            {FUNNEL.map((s) => (
+              <div key={s.state} className="flex items-center gap-3">
+                <span className="w-36 shrink-0 text-xs font-semibold text-steel-600">{CRM_LABEL[s.state]}</span>
+                <div className="h-5 flex-1 overflow-hidden rounded bg-steel-100">
+                  <div
+                    className="flex h-full items-center justify-end rounded px-2 text-[11px] font-bold text-white"
+                    style={{ width: `${Math.max(5, (crmCounts[s.state] / maxFunnel) * 100)}%`, backgroundColor: s.color }}
+                  >
+                    {crmCounts[s.state]}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

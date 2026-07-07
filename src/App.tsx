@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Catalog } from './pages/Catalog';
 import { ProjectDetail } from './pages/ProjectDetail';
 import { Pipeline } from './pages/Pipeline';
+import { GestionComercial } from './pages/GestionComercial';
 import { Companies } from './pages/Companies';
 import { ActionPlan } from './pages/ActionPlan';
 import { Alerts } from './pages/Alerts';
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/catalogo" element={<Catalog />} />
         <Route path="/pipeline" element={<Pipeline />} />
+        <Route path="/gestion-comercial" element={<GestionComercial />} />
         <Route path="/proyectos/:id" element={<ProjectDetail />} />
         <Route path="/empresas" element={<Companies />} />
         <Route path="/plan" element={<ActionPlan />} />

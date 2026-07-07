@@ -1,7 +1,10 @@
 import { Link, useParams } from 'react-router-dom';
 import { enrichedProjects } from '../data/enriched';
 import { fmtMusd } from '../lib/stats';
+import { contactKey } from '../lib/contactos';
 import {
+  ContactoNivelBadge,
+  LinkedInIcon,
   NormativaChip,
   PipeBadge,
   PipeIcon,
@@ -13,6 +16,7 @@ import {
   StageBadge,
   UnconfirmedFlag,
 } from '../components/ui';
+import { CrmControl } from '../components/CrmControl';
 import { useApp } from '../context/AppContext';
 
 export function ProjectDetail() {
@@ -38,6 +42,9 @@ export function ProjectDetail() {
 
   const isContacted = contacted.has(project.id);
   const isPipeline = project.categoria === 'pipeline';
+  const contactos = [...project.contactosClave].sort(
+    (a, b) => a.prioridad - b.prioridad || a.empresa.localeCompare(b.empresa, 'es'),
+  );
 
   return (
     <div className="space-y-6">
@@ -150,6 +157,67 @@ export function ProjectDetail() {
             <p className="mt-1 text-sm text-steel-500">
               Este proyecto está <strong>fuera del core de ductos/pipeline</strong> de ARCANCHILE (transmisión, obra civil,
               edificación o monitoreo sin cañerías). Se rastrea para posibles alianzas o servicios complementarios.
+            </p>
+          </div>
+        )}
+
+        {/* Contactos Clave para Gestión Comercial */}
+        {contactos.length > 0 && (
+          <div className="mt-6">
+            <SectionTitle
+              right={
+                <Link to="/gestion-comercial" className="text-xs font-semibold text-amber-600 hover:underline">
+                  Ver CRM completo →
+                </Link>
+              }
+            >
+              Contactos clave para gestión comercial
+            </SectionTitle>
+            <div className="overflow-x-auto rounded-lg border border-steel-200">
+              <table className="w-full min-w-[720px] border-collapse">
+                <thead className="border-b border-steel-200 bg-steel-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Prio.</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Cargo / departamento</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Empresa</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Canal sugerido</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Objetivo de la reunión</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contactos.map((c) => (
+                    <tr key={`${c.empresa}-${c.cargo}`} className="border-b border-steel-100 align-top">
+                      <td className="px-3 py-2">
+                        <span
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-navy-900 text-xs font-bold text-white"
+                          title={`Prioridad ${c.prioridad}`}
+                        >
+                          {c.prioridad}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-sm">
+                        <span className="flex flex-wrap items-center gap-1.5 font-semibold text-navy-900">
+                          {c.cargo}
+                          <ContactoNivelBadge nivel={c.nivel} />
+                          {c.nivel !== 'acceso' && <LinkedInIcon className="h-3.5 w-3.5 text-sky-700" />}
+                        </span>
+                        <span className="text-xs text-steel-500">{c.departamento}</span>
+                      </td>
+                      <td className="px-3 py-2 text-sm text-steel-600">{c.empresa}</td>
+                      <td className="max-w-56 px-3 py-2 text-xs text-steel-600">{c.canalSugerido}</td>
+                      <td className="max-w-md px-3 py-2 text-xs text-steel-600">{c.objetivo}</td>
+                      <td className="px-3 py-2">
+                        <CrmControl contactKey={contactKey(project.id, c)} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-[11px] text-steel-400">
+              Cargos genéricos según el tipo de empresa (mandante y/o EPC), no personas reales. Ordenados por prioridad de
+              contacto.
             </p>
           </div>
         )}

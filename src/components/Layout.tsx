@@ -6,6 +6,7 @@ const links = [
   { to: '/', label: 'Dashboard', end: true, pipe: false },
   { to: '/catalogo', label: 'Proyectos', pipe: false },
   { to: '/pipeline', label: 'Pipeline', pipe: true },
+  { to: '/gestion-comercial', label: 'Gestión Comercial', pipe: false },
   { to: '/empresas', label: 'Empresas', pipe: false },
   { to: '/plan', label: 'Plan de Acción', pipe: false },
   { to: '/alertas', label: 'Alertas', pipe: false },

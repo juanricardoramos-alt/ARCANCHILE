@@ -137,5 +137,36 @@ export interface PipelineInfo {
   pipelineServices: PipelineServiceCategory[];
 }
 
-/** Proyecto con la clasificación pipeline fusionada. */
-export interface EnrichedProject extends Project, PipelineInfo {}
+// ══════════════ Contactos clave / gestión comercial (CRM) ══════════════
+
+export type ContactoNivel = 'decisor' | 'influenciador' | 'tecnico' | 'acceso';
+
+export interface ContactoClave {
+  cargo: string;
+  departamento: string;
+  nivel: ContactoNivel;
+  prioridad: 1 | 2 | 3;
+  /** Qué buscar en esa reunión. */
+  objetivo: string;
+  /** Cómo llegar a esa persona. */
+  canalSugerido: string;
+  /** Empresa a la que pertenece el cargo (mandante o EPC). */
+  empresa: string;
+}
+
+export type CrmState = 'pendiente' | 'contactado' | 'reunion' | 'propuesta' | 'seguimiento';
+
+export const CRM_STATES: CrmState[] = ['pendiente', 'contactado', 'reunion', 'propuesta', 'seguimiento'];
+
+export const CRM_LABEL: Record<CrmState, string> = {
+  pendiente: 'Pendiente',
+  contactado: 'Contactado',
+  reunion: 'Reunión agendada',
+  propuesta: 'Propuesta enviada',
+  seguimiento: 'En seguimiento',
+};
+
+/** Proyecto con la clasificación pipeline y los contactos clave fusionados. */
+export interface EnrichedProject extends Project, PipelineInfo {
+  contactosClave: ContactoClave[];
+}

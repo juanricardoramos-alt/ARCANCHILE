@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import type { Priority, RelevanciaArcanchile, Stage } from '../data/types';
+import type { ContactoNivel, CrmState, Priority, RelevanciaArcanchile, Stage } from '../data/types';
+import { CRM_LABEL } from '../data/types';
 
 export function PriorityBadge({ priority, size = 'sm' }: { priority: Priority; size?: 'sm' | 'lg' }) {
   const styles: Record<Priority, string> = {
@@ -166,3 +167,37 @@ export function UnconfirmedFlag() {
     </span>
   );
 }
+
+const nivelMeta: Record<ContactoNivel, { label: string; cls: string }> = {
+  decisor: { label: 'Decisor', cls: 'bg-red-100 text-red-700 border-red-300' },
+  influenciador: { label: 'Influenciador', cls: 'bg-orange-100 text-orange-700 border-orange-300' },
+  tecnico: { label: 'Técnico', cls: 'bg-sky-100 text-sky-700 border-sky-300' },
+  acceso: { label: 'Acceso', cls: 'bg-steel-200 text-steel-700 border-steel-300' },
+};
+
+export function ContactoNivelBadge({ nivel }: { nivel: ContactoNivel }) {
+  const m = nivelMeta[nivel];
+  return <span className={`inline-block whitespace-nowrap rounded border px-2 py-0.5 text-[11px] font-bold ${m.cls}`}>{m.label}</span>;
+}
+
+export function LinkedInIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-label="LinkedIn" role="img">
+      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
+    </svg>
+  );
+}
+
+const crmMeta: Record<CrmState, string> = {
+  pendiente: 'bg-steel-100 text-steel-600 border-steel-300',
+  contactado: 'bg-sky-100 text-sky-700 border-sky-300',
+  reunion: 'bg-amber-100 text-amber-700 border-amber-300',
+  propuesta: 'bg-violet-100 text-violet-700 border-violet-300',
+  seguimiento: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+};
+
+export function CrmBadge({ state }: { state: CrmState }) {
+  return <span className={`inline-block whitespace-nowrap rounded border px-2 py-0.5 text-[11px] font-semibold ${crmMeta[state]}`}>{CRM_LABEL[state]}</span>;
+}
+
+export const crmSelectClass: Record<CrmState, string> = crmMeta;
