@@ -8,6 +8,7 @@ import {
   ContactoNivelBadge,
   CrmBadge,
   LinkedInIcon,
+  OrigenBadge,
   NormativaChip,
   PipeBadge,
   PipeIcon,
@@ -199,8 +200,14 @@ export function ProjectDetail() {
                             {c.nombre}
                             <ContactoNivelBadge nivel={c.nivel} />
                             <LinkedInIcon className="h-3.5 w-3.5 text-sky-700" />
+                            <OrigenBadge origen={c.origen} />
                           </span>
                           <span className="text-xs text-steel-500">{c.cargo}</span>
+                          {c.email && (
+                            <a href={`mailto:${c.email}`} className="block text-xs font-medium text-sky-700 hover:underline">
+                              {c.email}
+                            </a>
+                          )}
                         </td>
                         <td className="px-3 py-2 text-sm text-steel-600">
                           {c.empresa}

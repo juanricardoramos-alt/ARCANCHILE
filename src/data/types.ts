@@ -196,10 +196,15 @@ export const SECTOR_LABEL: Record<ContactSector, string> = {
   INDUSTRIAL: 'Industrial',
 };
 
+/** Fuente del contacto: prospección LinkedIn o asistente al evento Pipeline II (MineGroup). */
+export type ContactOrigen = 'LinkedIn' | 'Pipeline II' | 'Ambas';
+
 export interface RealContact {
   id: string;
+  origen: ContactOrigen;
   nombre: string;
   fono: string;
+  email: string;
   empresa: string;
   empresaRaw: string;
   sector: ContactSector;
@@ -208,9 +213,8 @@ export interface RealContact {
   prioridad: 1 | 2 | 3;
   /** Estado CRM inicial derivado de la columna de gestión original de la BBDD. */
   crmInicial: CrmState;
-  /** Nota original de gestión (columna A del Excel). */
+  /** Nota original de gestión / fuente. */
   nota: string;
-  email: string;
   /** Proyectos de la plataforma cuya empresa coincide con la del contacto. */
   projectIds: string[];
 }

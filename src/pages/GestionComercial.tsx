@@ -12,9 +12,9 @@ import {
   waHref,
 } from '../lib/realContacts';
 import { CRM_LABEL, SECTOR_LABEL } from '../data/types';
-import type { ContactoNivel, ContactSector, CrmState } from '../data/types';
+import type { ContactoNivel, ContactOrigen, ContactSector, CrmState } from '../data/types';
 import { useApp } from '../context/AppContext';
-import { ContactoNivelBadge, KpiCard, LinkedInIcon, PipeBadge, SectionTitle } from '../components/ui';
+import { ContactoNivelBadge, KpiCard, LinkedInIcon, OrigenBadge, PipeBadge, SectionTitle } from '../components/ui';
 import { CrmControl } from '../components/CrmControl';
 
 const FUNNEL: { state: CrmState; color: string }[] = [
@@ -39,7 +39,7 @@ export function GestionComercial() {
           <h1 className="text-2xl font-black text-navy-900">Gestión comercial · CRM de contactos</h1>
           <p className="text-sm text-steel-500">
             {mode === 'reales'
-              ? `${contactosReales.length} contactos reales importados desde la BBDD de LinkedIn de ARCANCHILE`
+              ? `${contactosReales.length} contactos reales de ARCANCHILE (BBDD LinkedIn + asistentes al evento Pipeline II)`
               : 'Perfiles de cargos objetivo por proyecto (cuándo no hay contacto real, a quién buscar)'}
           </p>
         </div>
@@ -67,6 +67,7 @@ export function GestionComercial() {
 // ───────────────────────── Contactos reales (BBDD) ─────────────────────────
 function RealesView({ crm }: { crm: Record<string, CrmState> }) {
   const [q, setQ] = useState('');
+  const [origen, setOrigen] = useState('');
   const [sector, setSector] = useState('');
   const [empresa, setEmpresa] = useState('');
   const [nivel, setNivel] = useState('');
@@ -79,6 +80,7 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
   const filtered = useMemo(() => {
     const text = q.trim().toLowerCase();
     return contactosReales.filter((c) => {
+      if (origen && c.origen !== origen && !(origen === 'Pipeline II' && c.origen === 'Ambas') && !(origen === 'LinkedIn' && c.origen === 'Ambas')) return false;
       if (sector && c.sector !== sector) return false;
       if (empresa && c.empresa !== empresa) return false;
       if (nivel && c.nivel !== nivel) return false;
@@ -86,13 +88,13 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
       if (estado && stateOf(c) !== estado) return false;
       if (soloVinculados && c.projectIds.length === 0) return false;
       if (text) {
-        const hay = `${c.nombre} ${c.empresa} ${c.empresaRaw} ${c.cargo}`.toLowerCase();
+        const hay = `${c.nombre} ${c.empresa} ${c.empresaRaw} ${c.cargo} ${c.email}`.toLowerCase();
         if (!hay.includes(text)) return false;
       }
       return true;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, sector, empresa, nivel, prioridad, estado, soloVinculados, crm]);
+  }, [q, origen, sector, empresa, nivel, prioridad, estado, soloVinculados, crm]);
 
   const counts = useMemo(() => {
     const acc: Record<CrmState, number> = { pendiente: 0, contactado: 0, reunion: 0, propuesta: 0, seguimiento: 0 };
@@ -145,9 +147,14 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar nombre, empresa o cargo…"
+          placeholder="Buscar nombre, empresa, cargo o correo…"
           className="min-w-52 flex-1 rounded border border-steel-300 px-3 py-1.5 text-sm outline-none focus:border-amber-500"
         />
+        <select value={origen} onChange={(e) => setOrigen(e.target.value)} className="rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500">
+          <option value="">Toda fuente</option>
+          <option value="Pipeline II">Pipeline II (evento)</option>
+          <option value="LinkedIn">LinkedIn</option>
+        </select>
         <select value={sector} onChange={(e) => setSector(e.target.value)} className="rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500">
           <option value="">Todo sector</option>
           {SECTORES.map((s) => (
@@ -211,9 +218,14 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
                       {c.nombre}
                       <ContactoNivelBadge nivel={c.nivel} />
                       <LinkedInIcon className="h-3.5 w-3.5 text-sky-700" />
+                      <OrigenBadge origen={c.origen} />
                     </span>
                     <span className="text-xs text-steel-500">{c.cargo}</span>
-                    {c.email && <span className="block text-xs text-sky-700">{c.email}</span>}
+                    {c.email && (
+                      <a href={`mailto:${c.email}`} className="block text-xs font-medium text-sky-700 hover:underline">
+                        {c.email}
+                      </a>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-sm text-steel-600">
                     {c.empresa}
@@ -263,8 +275,9 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
       </div>
 
       <p className="text-[11px] text-steel-400">
-        Contactos reales de la BBDD comercial de ARCANCHILE. El estado inicial se derivó de las notas de gestión originales;
-        los cambios se guardan localmente en este navegador. Teléfonos habilitados para llamada y WhatsApp.
+        Contactos reales de la BBDD comercial de ARCANCHILE (prospección LinkedIn + asistentes al evento Pipeline II de
+        MineGroup). El estado inicial se derivó de las notas de gestión originales; los cambios se guardan localmente en este
+        navegador. Teléfonos habilitados para llamada y WhatsApp; correos con enlace directo.
       </p>
     </>
   );

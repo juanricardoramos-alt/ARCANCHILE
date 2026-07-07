@@ -180,6 +180,24 @@ export function ContactoNivelBadge({ nivel }: { nivel: ContactoNivel }) {
   return <span className={`inline-block whitespace-nowrap rounded border px-2 py-0.5 text-[11px] font-bold ${m.cls}`}>{m.label}</span>;
 }
 
+export function OrigenBadge({ origen }: { origen: 'LinkedIn' | 'Pipeline II' | 'Ambas' }) {
+  const cls =
+    origen === 'Pipeline II'
+      ? 'bg-sky-100 text-sky-800 border-sky-300'
+      : origen === 'Ambas'
+        ? 'bg-violet-100 text-violet-800 border-violet-300'
+        : 'bg-steel-100 text-steel-600 border-steel-300';
+  const label = origen === 'Pipeline II' ? 'Pipeline II' : origen === 'Ambas' ? 'LinkedIn + Pipeline II' : 'LinkedIn';
+  return (
+    <span
+      title={origen === 'Pipeline II' ? 'Asistente al evento Pipeline II (MineGroup) — lead tibio' : `Fuente: ${origen}`}
+      className={`inline-block whitespace-nowrap rounded border px-1.5 py-0.5 text-[10px] font-bold ${cls}`}
+    >
+      {label}
+    </span>
+  );
+}
+
 export function LinkedInIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-label="LinkedIn" role="img">
