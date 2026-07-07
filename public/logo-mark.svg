@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="48 6 122 214" fill="none">
+  <!-- Aleta / ola -->
+  <path d="M134 10
+           C 80 50, 46 132, 52 216
+           C 72 150, 96 106, 144 70
+           C 150 48, 146 26, 134 10 Z"
+        fill="#2B93CF"/>
+  <g fill="#2B93CF">
+    <!-- barras E / euro -->
+    <rect x="110" y="104" width="60" height="15" rx="2.5"/>
+    <rect x="122" y="134" width="48" height="15" rx="2.5"/>
+    <rect x="110" y="164" width="60" height="15" rx="2.5"/>
+    <!-- diagonal izquierda de la A -->
+    <path d="M104 101 L123 101 L97 182 L78 182 Z"/>
+    <!-- pie izquierdo -->
+    <rect x="78" y="168" width="18" height="15" rx="2.5"/>
+    <!-- pie derecho -->
+    <rect x="151" y="164" width="18" height="19" rx="2.5"/>
+  </g>
+</svg>

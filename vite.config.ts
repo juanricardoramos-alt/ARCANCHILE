@@ -10,7 +10,15 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
+      includeAssets: [
+        'favicon.ico',
+        'favicon-16x16.png',
+        'favicon-32x32.png',
+        'apple-touch-icon.png',
+        'logo-mark.svg',
+        'icon-192.png',
+        'icon-512.png',
+      ],
       manifest: {
         name: 'ARCANCHILE',
         short_name: 'ARCANCHILE',

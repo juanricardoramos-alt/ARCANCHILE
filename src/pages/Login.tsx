@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Logo } from '../components/Layout';
 
 export function Login() {
   const { login, usaSupabase } = useApp();
@@ -25,8 +24,14 @@ export function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 px-4">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-          <Logo />
+        <div className="mb-8 flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center rounded-2xl bg-white px-8 py-6 shadow-2xl">
+            <img src="/logo-mark.svg" alt="ARCANCHILE" className="h-[120px] w-auto" />
+            <div className="mt-2 text-center font-black leading-none tracking-wide">
+              <div className="text-2xl text-navy-950">ARCAN</div>
+              <div className="text-2xl tracking-[0.2em] text-[#2B93CF]">CHILE</div>
+            </div>
+          </div>
         </div>
         <form onSubmit={onSubmit} className="rounded-xl border border-navy-700 bg-navy-900/60 p-8 shadow-2xl backdrop-blur">
           <h1 className="text-xl font-bold text-white">Plataforma de Gestión Comercial</h1>

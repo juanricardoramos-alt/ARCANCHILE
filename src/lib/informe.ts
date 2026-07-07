@@ -263,18 +263,32 @@ export function generarInformeHtml(
 
   const pie = `Informe generado automáticamente — Plataforma ARCANCHILE — ${fFechaHora(now.toISOString())} — Confidencial`;
 
+  // Marca ARCANCHILE embebida (SVG en línea, para que el informe descargado no dependa de archivos externos).
+  const marca = (h: number) =>
+    `<svg viewBox="48 6 122 214" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block">` +
+    `<path d="M134 10 C 80 50, 46 132, 52 216 C 72 150, 96 106, 144 70 C 150 48, 146 26, 134 10 Z" fill="#2B93CF"/>` +
+    `<g fill="#2B93CF">` +
+    `<rect x="110" y="104" width="60" height="15" rx="2.5"/>` +
+    `<rect x="122" y="134" width="48" height="15" rx="2.5"/>` +
+    `<rect x="110" y="164" width="60" height="15" rx="2.5"/>` +
+    `<path d="M104 101 L123 101 L97 182 L78 182 Z"/>` +
+    `<rect x="78" y="168" width="18" height="15" rx="2.5"/>` +
+    `<rect x="151" y="164" width="18" height="19" rx="2.5"/>` +
+    `</g></svg>`;
+
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe de Gestión Comercial — ARCANCHILE</title>
 <style>
-  :root{--navy:#0f2a43;--navy2:#1e4265;--amber:#f59e0b;--steel:#64748b;--line:#e2e8f0;}
+  :root{--navy:#0f2a43;--navy2:#1e4265;--amber:#f59e0b;--brand:#2B93CF;--steel:#64748b;--line:#e2e8f0;}
   *{box-sizing:border-box}
   body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#0f172a;margin:0;padding:0 0 60px;background:#fff;font-size:12px;line-height:1.45}
   .wrap{max-width:900px;margin:0 auto;padding:24px}
   h1{font-size:26px;margin:0}
   h2{font-size:16px;color:var(--navy);border-bottom:2px solid var(--amber);padding-bottom:4px;margin:26px 0 12px}
   h3{font-size:13px;color:var(--navy2);margin:14px 0 6px}
-  .logo{display:inline-flex;align-items:center;gap:10px}
-  .logo .mark{width:40px;height:40px;border-radius:8px;background:var(--amber);color:var(--navy);font-weight:900;font-size:24px;display:flex;align-items:center;justify-content:center}
-  .logo .name{font-weight:900;letter-spacing:2px;font-size:24px;color:var(--navy)}
+  .logo{display:inline-flex;align-items:center;gap:12px}
+  .logo .name{font-weight:900;letter-spacing:1px;font-size:24px;line-height:1}
+  .logo .name .a{color:var(--navy)}
+  .logo .name .c{color:var(--brand)}
   .cover{border:1px solid var(--line);border-radius:12px;padding:28px;background:linear-gradient(135deg,#f8fafc,#fff)}
   .muted{color:var(--steel)}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0}
@@ -303,7 +317,7 @@ export function generarInformeHtml(
 <div class="wrap">
 
   <div class="cover section">
-    <div class="logo"><span class="mark">A</span><span class="name">ARCANCHILE</span></div>
+    <div class="logo">${marca(56)}<span class="name"><span class="a">ARCAN</span><span class="c">CHILE</span></span></div>
     <h1 style="margin-top:14px">Informe de Gestión Comercial</h1>
     <p class="muted" style="margin:6px 0 0">Generado el ${fFechaHora(now.toISOString())}</p>
     <p class="muted" style="margin:2px 0 0">Período: desde ${primeraActividad ? fFecha(primeraActividad) : 'sin actividades registradas'} hasta hoy</p>
@@ -408,7 +422,7 @@ export function generarInformeHtml(
   </div>
 
 </div>
-<div class="print-footer">${esc(pie)}</div>
+<div class="print-footer"><span style="display:inline-flex;align-items:center;gap:6px">${marca(12)}<span>${esc(pie)}</span></span></div>
 </body></html>`;
 }
 

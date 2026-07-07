@@ -18,8 +18,10 @@ const links = [
 
 export function Logo({ dark = false }: { dark?: boolean }) {
   return (
-    <span className="flex items-center gap-2">
-      <span className="flex h-8 w-8 items-center justify-center rounded bg-amber-500 font-black text-navy-950">A</span>
+    <span className="flex items-center gap-2.5">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white p-1 shadow-sm md:h-10 md:w-10">
+        <img src="/logo-mark.svg" alt="ARCANCHILE" className="h-full w-full object-contain" />
+      </span>
       <span className={`text-lg font-black tracking-wider ${dark ? 'text-navy-900' : 'text-white'}`}>
         ARCANCHILE
         <span className="ml-2 hidden text-[10px] font-semibold tracking-normal text-steel-400 lg:inline">
