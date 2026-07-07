@@ -170,3 +170,47 @@ export const CRM_LABEL: Record<CrmState, string> = {
 export interface EnrichedProject extends Project, PipelineInfo {
   contactosClave: ContactoClave[];
 }
+
+// ══════════════ Contactos reales (BBDD LinkedIn de ARCANCHILE) ══════════════
+
+export type ContactSector =
+  | 'MINERO'
+  | 'EPC'
+  | 'ENERGIA'
+  | 'OIL_GAS'
+  | 'PIPELINE'
+  | 'AGUA'
+  | 'CELULOSA'
+  | 'INSPECCION'
+  | 'INDUSTRIAL';
+
+export const SECTOR_LABEL: Record<ContactSector, string> = {
+  MINERO: 'Minería',
+  EPC: 'EPC / Ingeniería',
+  ENERGIA: 'Energía',
+  OIL_GAS: 'Petróleo y Gas',
+  PIPELINE: 'Ductos / Pipeline',
+  AGUA: 'Agua / Desalación',
+  CELULOSA: 'Celulosa',
+  INSPECCION: 'Inspección / Certificación',
+  INDUSTRIAL: 'Industrial',
+};
+
+export interface RealContact {
+  id: string;
+  nombre: string;
+  fono: string;
+  empresa: string;
+  empresaRaw: string;
+  sector: ContactSector;
+  cargo: string;
+  nivel: ContactoNivel;
+  prioridad: 1 | 2 | 3;
+  /** Estado CRM inicial derivado de la columna de gestión original de la BBDD. */
+  crmInicial: CrmState;
+  /** Nota original de gestión (columna A del Excel). */
+  nota: string;
+  email: string;
+  /** Proyectos de la plataforma cuya empresa coincide con la del contacto. */
+  projectIds: string[];
+}

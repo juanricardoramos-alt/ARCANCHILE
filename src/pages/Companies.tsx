@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { companies } from '../data/companies';
+import { contactosReales, empresasReales, realByEmpresa } from '../lib/realContacts';
 import type { CompanyType } from '../data/types';
 
 const TYPES: CompanyType[] = [
@@ -75,6 +77,31 @@ export function Companies() {
             </a>
           </div>
         ))}
+      </div>
+
+      {/* Contactos reales por empresa (BBDD) */}
+      <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-800">
+            Contactos reales en la BBDD por empresa ({contactosReales.length} en {empresasReales.length} empresas)
+          </h2>
+          <Link to="/gestion-comercial" className="text-xs font-semibold text-emerald-700 hover:underline">
+            Ir al CRM →
+          </Link>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {empresasReales
+            .map((e) => ({ e, n: realByEmpresa[e].length, d: realByEmpresa[e].filter((c) => c.nivel === 'decisor').length }))
+            .sort((a, b) => b.n - a.n)
+            .slice(0, 40)
+            .map(({ e, n, d }) => (
+              <span key={e} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-white px-2.5 py-1 text-xs">
+                <span className="font-semibold text-navy-800">{e}</span>
+                <span className="rounded-full bg-emerald-600 px-1.5 font-bold text-white">{n}</span>
+                {d > 0 && <span className="text-red-600" title={`${d} decisor(es)`}>· {d} dec.</span>}
+              </span>
+            ))}
+        </div>
       </div>
 
       <div className="rounded-lg border border-navy-200 bg-navy-50 p-4 text-sm text-navy-800">

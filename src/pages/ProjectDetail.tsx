@@ -2,8 +2,11 @@ import { Link, useParams } from 'react-router-dom';
 import { enrichedProjects } from '../data/enriched';
 import { fmtMusd } from '../lib/stats';
 import { contactKey } from '../lib/contactos';
+import { realByProject, realKey, realStateOf, telHref, waHref } from '../lib/realContacts';
+import { SECTOR_LABEL } from '../data/types';
 import {
   ContactoNivelBadge,
+  CrmBadge,
   LinkedInIcon,
   NormativaChip,
   PipeBadge,
@@ -21,7 +24,7 @@ import { useApp } from '../context/AppContext';
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
-  const { contacted, toggleContacted } = useApp();
+  const { contacted, toggleContacted, crm } = useApp();
   const project = enrichedProjects.find((p) => p.id === id);
 
   if (!project) {
@@ -45,6 +48,8 @@ export function ProjectDetail() {
   const contactos = [...project.contactosClave].sort(
     (a, b) => a.prioridad - b.prioridad || a.empresa.localeCompare(b.empresa, 'es'),
   );
+  const realcontactos = realByProject[project.id] ?? [];
+  const realTop = realcontactos.slice(0, 8);
 
   return (
     <div className="space-y-6">
@@ -161,7 +166,79 @@ export function ProjectDetail() {
           </div>
         )}
 
-        {/* Contactos Clave para Gestión Comercial */}
+        {/* Contactos reales de la BBDD */}
+        {realcontactos.length > 0 && (
+          <div className="mt-6 rounded-lg border-2 border-emerald-200 bg-emerald-50/40 p-4">
+            <SectionTitle
+              right={
+                <Link to="/gestion-comercial" className="text-xs font-semibold text-emerald-700 hover:underline">
+                  {realcontactos.length} en la BBDD · ver CRM →
+                </Link>
+              }
+            >
+              Contactos reales de la BBDD ({realcontactos.length})
+            </SectionTitle>
+            <div className="overflow-x-auto rounded border border-emerald-200 bg-white">
+              <table className="w-full min-w-[720px] border-collapse">
+                <thead className="border-b border-steel-200 bg-steel-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Contacto</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Empresa</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Teléfono</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {realTop.map((c) => {
+                    const tel = telHref(c.fono);
+                    const wa = waHref(c.fono);
+                    return (
+                      <tr key={c.id} className="border-b border-steel-100 align-top">
+                        <td className="px-3 py-2 text-sm">
+                          <span className="flex flex-wrap items-center gap-1.5 font-semibold text-navy-900">
+                            {c.nombre}
+                            <ContactoNivelBadge nivel={c.nivel} />
+                            <LinkedInIcon className="h-3.5 w-3.5 text-sky-700" />
+                          </span>
+                          <span className="text-xs text-steel-500">{c.cargo}</span>
+                        </td>
+                        <td className="px-3 py-2 text-sm text-steel-600">
+                          {c.empresa}
+                          <span className="block text-[11px] text-steel-400">{SECTOR_LABEL[c.sector]}</span>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2 text-sm">
+                          <span className="font-mono text-steel-700">{c.fono || '—'}</span>
+                          <span className="mt-1 flex gap-2">
+                            {tel && <a href={tel} className="text-xs font-semibold text-navy-700 hover:underline">Llamar</a>}
+                            {wa && (
+                              <a href={wa} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-emerald-600 hover:underline">
+                                WhatsApp
+                              </a>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <CrmBadge state={realStateOf(crm, c)} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {realcontactos.length > realTop.length && (
+              <p className="mt-2 text-xs text-steel-500">
+                +{realcontactos.length - realTop.length} contactos más de esta empresa en la BBDD —{' '}
+                <Link to="/gestion-comercial" className="font-semibold text-emerald-700 hover:underline">
+                  gestionarlos en el CRM
+                </Link>
+                .
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Contactos Clave para Gestión Comercial (perfiles objetivo) */}
         {contactos.length > 0 && (
           <div className="mt-6">
             <SectionTitle
@@ -171,7 +248,7 @@ export function ProjectDetail() {
                 </Link>
               }
             >
-              Contactos clave para gestión comercial
+              Perfiles de cargo objetivo (a quién buscar)
             </SectionTitle>
             <div className="overflow-x-auto rounded-lg border border-steel-200">
               <table className="w-full min-w-[720px] border-collapse">

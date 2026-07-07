@@ -25,7 +25,7 @@ import {
   topByInvestment,
   totalInvestment,
 } from '../lib/stats';
-import { allContacts } from '../lib/contactos';
+import { contactosReales, realStateOf } from '../lib/realContacts';
 import type { Categoria, CrmState } from '../data/types';
 import { CRM_LABEL } from '../data/types';
 import { KpiCard, PipeIcon, SectionTitle } from '../components/ui';
@@ -62,10 +62,9 @@ export function Dashboard() {
   const [scope, setScope] = useState<Scope>('todos');
   const { crm } = useApp();
 
-  // CRM: contactos prioridad 1 (los primeros a gestionar)
-  const p1Contacts = allContacts.filter((f) => f.c.prioridad === 1);
+  // CRM: contactos reales de la BBDD
   const crmCounts: Record<CrmState, number> = { pendiente: 0, contactado: 0, reunion: 0, propuesta: 0, seguimiento: 0 };
-  for (const f of p1Contacts) crmCounts[crm[f.key] ?? 'pendiente'] += 1;
+  for (const c of contactosReales) crmCounts[realStateOf(crm, c)] += 1;
   const maxFunnel = Math.max(1, ...FUNNEL.map((s) => crmCounts[s.state]));
 
   const inScope = (categoria: Categoria) => scope === 'todos' || scope === categoria;
@@ -203,13 +202,13 @@ export function Dashboard() {
         <div className="rounded-lg border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm">
           <div className="text-xs font-semibold uppercase tracking-wide text-steel-500">Contactos por gestionar</div>
           <div className="mt-1 text-4xl font-black text-navy-900">{crmCounts.pendiente}</div>
-          <div className="mt-1 text-xs text-steel-500">decisores prioridad 1 aún pendientes</div>
+          <div className="mt-1 text-xs text-steel-500">de {contactosReales.length} contactos reales en la BBDD</div>
           <Link to="/gestion-comercial" className="mt-3 inline-block text-xs font-bold text-amber-600 hover:underline">
             Ir a gestión comercial →
           </Link>
         </div>
         <div className="rounded-lg border border-steel-200 bg-white p-4 shadow-sm md:col-span-2">
-          <SectionTitle>Embudo de gestión comercial · contactos prioridad 1</SectionTitle>
+          <SectionTitle>Embudo de gestión comercial · contactos reales de la BBDD</SectionTitle>
           <div className="space-y-1.5">
             {FUNNEL.map((s) => (
               <div key={s.state} className="flex items-center gap-3">

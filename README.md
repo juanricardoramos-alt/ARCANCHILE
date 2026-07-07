@@ -33,9 +33,15 @@ La clasificación vive en `src/data/pipelineClassification.ts` y se fusiona con 
 | Plan de Acción | Timeline de 90 días, checklist interactivo (persistente) y tabla maestra A/B/C con filtros (marca los proyectos pipeline) |
 | Alertas | Licitaciones activas con la alerta ENAP destacada como prioritaria y plan de monitoreo |
 
-### Contactos clave / gestión comercial
+### Contactos: reales (BBDD) + perfiles objetivo
 
-Cada proyecto lleva `contactosClave: ContactoClave[]` con **cargos genéricos** (no personas reales) adaptados al tipo de empresa. Se generan a partir de plantillas por arquetipo (`minero`, `epc`, `energia`, `enap`, `gas`, `estatal`, `industrial`) mapeadas en `src/data/contactos.ts`; los proyectos con mandante **y** EPC conocida incluyen contactos de ambas. Cada contacto tiene `cargo`, `departamento`, `nivel` (decisor/influenciador/técnico/acceso), `prioridad` (1-3), `objetivo` de la reunión y `canalSugerido`. El estado CRM (Pendiente/Contactado/Reunión agendada/Propuesta enviada/En seguimiento) se guarda por contacto en `localStorage`.
+La plataforma maneja **dos capas** de contactos:
+
+1. **Contactos reales (BBDD)** — `src/data/contactosReales.ts`: 481 contactos importados desde la base de datos de LinkedIn de ARCANCHILE (`BBDD_LINKEDIN_2025-2026.xlsx`), filtrados a empresas del sector (minería, EPC/ingeniería, energía, ductos, agua, celulosa, oil&gas, inspección, industrial) — se descartaron ~640 de rubros no relacionados. Cada contacto real tiene nombre, teléfono (con enlaces a llamada y WhatsApp), empresa, cargo, `nivel`/`prioridad` derivados del cargo, `sector`, `nota` original y un **estado CRM inicial derivado de la columna de gestión** de la BBDD (p. ej. "AGENDADO" → Reunión agendada, "PRESENTACIÓN ENVIADA" → Propuesta, "ARCAN" → En seguimiento). Cada contacto se vincula automáticamente a los proyectos cuya empresa coincide (277 vinculados a 51 proyectos).
+
+2. **Perfiles objetivo** — `src/data/contactos.ts`: cargos genéricos (no personas) por arquetipo de empresa (`minero`, `epc`, `energia`, `enap`, `gas`, `estatal`, `industrial`), para saber a quién buscar cuando no hay un contacto real. Cada uno con `objetivo` de reunión y `canalSugerido`.
+
+La página **Gestión Comercial** alterna entre ambas capas (reales por defecto). El detalle de cada proyecto muestra sus contactos reales de la BBDD y, debajo, los perfiles objetivo. El estado CRM (Pendiente/Contactado/Reunión/Propuesta/Seguimiento) se guarda por contacto en `localStorage`; para los reales, el estado inicial es el derivado de la BBDD.
 
 ---
 

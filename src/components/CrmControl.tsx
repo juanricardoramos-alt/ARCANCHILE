@@ -4,9 +4,9 @@ import type { CrmState } from '../data/types';
 import { crmSelectClass } from './ui';
 
 /** Selector de estado CRM para un contacto (persistente vía contexto). */
-export function CrmControl({ contactKey }: { contactKey: string }) {
+export function CrmControl({ contactKey, initial = 'pendiente' }: { contactKey: string; initial?: CrmState }) {
   const { crm, setCrm } = useApp();
-  const value: CrmState = crm[contactKey] ?? 'pendiente';
+  const value: CrmState = crm[contactKey] ?? initial;
   return (
     <select
       value={value}
