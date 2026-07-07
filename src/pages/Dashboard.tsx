@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bar,
@@ -12,18 +13,20 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { projects } from '../data/projects';
 import {
   actionableProjects,
   activeProjects,
+  categoriaBySector,
   fmtMusd,
   investmentBySector,
   projectsByPriority,
   projectsByStage,
+  relevanciaCounts,
   topByInvestment,
   totalInvestment,
 } from '../lib/stats';
-import { KpiCard, SectionTitle } from '../components/ui';
+import type { Categoria } from '../data/types';
+import { KpiCard, PipeIcon, SectionTitle } from '../components/ui';
 import { ChileMap } from '../components/ChileMap';
 
 const STAGE_COLORS: Record<string, string> = {
@@ -39,13 +42,40 @@ const STAGE_COLORS: Record<string, string> = {
   Desistido: '#b91c1c',
 };
 
+type Scope = 'todos' | Categoria;
+
+const PIPE_BLUE = '#0369a1';
+const OTROS_GRAY = '#94a3b8';
+
 export function Dashboard() {
-  const bySector = investmentBySector(actionableProjects);
-  const byStage = projectsByStage(projects);
-  const byPriority = projectsByPriority(activeProjects);
-  const top10 = topByInvestment(actionableProjects, 10);
-  const totalInv = totalInvestment(actionableProjects);
-  const regions = new Set(activeProjects.map((p) => p.region));
+  const [scope, setScope] = useState<Scope>('todos');
+
+  const inScope = (categoria: Categoria) => scope === 'todos' || scope === categoria;
+  const scActive = activeProjects.filter((p) => inScope(p.categoria));
+  const scActionable = actionableProjects.filter((p) => inScope(p.categoria));
+
+  const bySector = investmentBySector(scActionable);
+  const byStage = projectsByStage(scActive);
+  const byPriority = projectsByPriority(scActive);
+  const top10 = topByInvestment(scActionable, 10);
+  const totalInv = totalInvestment(scActionable);
+  const regions = new Set(scActive.map((p) => p.region));
+  const stacked = categoriaBySector(actionableProjects);
+
+  // Comparación Pipeline vs Otros (siempre ambos, independiente del filtro)
+  const pipeActive = activeProjects.filter((p) => p.categoria === 'pipeline');
+  const otrosActiveList = activeProjects.filter((p) => p.categoria === 'otros');
+  const pipeInv = totalInvestment(actionableProjects.filter((p) => p.categoria === 'pipeline'));
+  const otrosInv = totalInvestment(actionableProjects.filter((p) => p.categoria === 'otros'));
+  const rel = relevanciaCounts(pipeActive);
+
+  const scopeLabel = scope === 'pipeline' ? 'Core Pipeline' : scope === 'otros' ? 'Otros proyectos' : 'todos los sectores';
+
+  const tabs: { key: Scope; label: string; icon?: boolean }[] = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'pipeline', label: 'Core ARCANCHILE (Pipeline)', icon: true },
+    { key: 'otros', label: 'Otros Proyectos' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -57,15 +87,37 @@ export function Dashboard() {
         </p>
       </div>
 
-      {/* KPIs */}
+      {/* Filtro principal Pipeline / Otros / Todos */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-steel-200 bg-white p-2 shadow-sm">
+        <span className="px-2 text-xs font-bold uppercase tracking-wide text-steel-400">Ver:</span>
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setScope(t.key)}
+            className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-semibold transition-colors ${
+              scope === t.key
+                ? t.key === 'pipeline'
+                  ? 'bg-sky-700 text-white'
+                  : 'bg-navy-900 text-white'
+                : 'text-steel-600 hover:bg-steel-100'
+            }`}
+          >
+            {t.icon && <PipeIcon className="h-4 w-4" />}
+            {t.label}
+          </button>
+        ))}
+        <Link
+          to="/pipeline"
+          className="ml-auto text-xs font-semibold text-sky-700 hover:underline"
+        >
+          Ir a Oportunidades Pipeline →
+        </Link>
+      </div>
+
+      {/* KPIs (scoped) */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-        <KpiCard label="Oportunidades activas" value={activeProjects.length} sub="proyectos y contratos catalogados" />
-        <KpiCard
-          label="Inversión identificada"
-          value={fmtMusd(totalInv)}
-          sub="excluye desistidos y suspendidos"
-          accent
-        />
+        <KpiCard label={`Oportunidades (${scopeLabel})`} value={scActive.length} sub="activas, excluye desistidos" />
+        <KpiCard label="Inversión identificada" value={fmtMusd(totalInv)} sub="excluye desistidos y suspendidos" accent />
         <KpiCard
           label="Por prioridad"
           value={
@@ -77,14 +129,61 @@ export function Dashboard() {
           }
           sub="A: 0-6 meses · B: 6-18 · C: 2028+"
         />
-        <KpiCard label="Sectores cubiertos" value={bySector.length} sub="minería lidera con 41% del catastro CBC" />
+        <KpiCard label="Sectores" value={bySector.length} sub="minería lidera el catastro CBC (41%)" />
         <KpiCard label="Regiones con proyectos" value={regions.size} sub="foco: Antofagasta (US$40.209M Cochilco)" />
       </div>
 
-      {/* Fila de gráficos 1 */}
+      {/* Comparación Pipeline vs Otros (siempre ambos) */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-lg border-2 border-sky-300 bg-gradient-to-br from-sky-50 to-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-sky-800">
+              <PipeIcon className="h-5 w-5" /> Core ARCANCHILE · Pipeline / Ductos
+            </span>
+            <Link to="/pipeline" className="text-xs font-semibold text-sky-700 hover:underline">
+              Ver detalle →
+            </Link>
+          </div>
+          <div className="mt-3 flex flex-wrap items-end gap-x-8 gap-y-2">
+            <div>
+              <div className="text-3xl font-black text-sky-900">{pipeActive.length}</div>
+              <div className="text-xs text-steel-500">oportunidades con piping</div>
+            </div>
+            <div>
+              <div className="text-3xl font-black text-sky-900">{fmtMusd(pipeInv)}</div>
+              <div className="text-xs text-steel-500">inversión asociada</div>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            <span className="rounded-full bg-sky-700 px-2.5 py-1 font-bold text-white">Alta {rel.alta}</span>
+            <span className="rounded-full bg-sky-500 px-2.5 py-1 font-bold text-white">Media {rel.media}</span>
+            <span className="text-steel-500">Alta = ductos puros · Media = incluye piping de proceso</span>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-steel-300 bg-white p-4 shadow-sm">
+          <div className="text-sm font-black uppercase tracking-wide text-steel-600">Otros proyectos (fuera del core)</div>
+          <div className="mt-3 flex flex-wrap items-end gap-x-8 gap-y-2">
+            <div>
+              <div className="text-3xl font-black text-steel-700">{otrosActiveList.length}</div>
+              <div className="text-xs text-steel-500">sin componente de ductos</div>
+            </div>
+            <div>
+              <div className="text-3xl font-black text-steel-700">{fmtMusd(otrosInv)}</div>
+              <div className="text-xs text-steel-500">inversión asociada</div>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-steel-500">
+            Transmisión eléctrica, BESS, obras civiles, puertos, edificación y monitoreo geotécnico sin ductos. Se rastrean
+            para alianzas y subcontratos, pero no son el foco de ARCANCHILE.
+          </p>
+        </div>
+      </div>
+
+      {/* Gráficos: sector + estado */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div className="rounded-lg border border-steel-200 bg-white p-4 shadow-sm xl:col-span-2">
-          <SectionTitle>Inversión identificada por sector (MUSD)</SectionTitle>
+          <SectionTitle>Inversión identificada por sector · {scopeLabel} (MUSD)</SectionTitle>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={bySector} margin={{ top: 5, right: 10, left: 10, bottom: 45 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -94,7 +193,7 @@ export function Dashboard() {
                 formatter={(value, name) => (name === 'inversion' ? [fmtMusd(Number(value)), 'Inversión'] : [value, name])}
                 labelStyle={{ fontWeight: 700 }}
               />
-              <Bar dataKey="inversion" fill="#f59e0b" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="inversion" fill={scope === 'pipeline' ? PIPE_BLUE : '#f59e0b'} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -103,14 +202,7 @@ export function Dashboard() {
           <SectionTitle>Proyectos por estado</SectionTitle>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie
-                data={byStage}
-                dataKey="count"
-                nameKey="stage"
-                innerRadius={55}
-                outerRadius={90}
-                paddingAngle={2}
-              >
+              <Pie data={byStage} dataKey="count" nameKey="stage" innerRadius={55} outerRadius={90} paddingAngle={2}>
                 {byStage.map((s) => (
                   <Cell key={s.stage} fill={STAGE_COLORS[s.stage] ?? '#94a3b8'} />
                 ))}
@@ -122,10 +214,39 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Fila de gráficos 2 */}
+      {/* Distribución Pipeline vs Otros por sector (siempre todos) */}
+      <div className="rounded-lg border border-steel-200 bg-white p-4 shadow-sm">
+        <SectionTitle>Distribución Pipeline vs Otros por sector (n° de proyectos)</SectionTitle>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={stacked} margin={{ top: 5, right: 10, left: 10, bottom: 45 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis dataKey="sector" tick={{ fontSize: 11, fill: '#475569' }} angle={-25} textAnchor="end" interval={0} />
+            <YAxis tick={{ fontSize: 11, fill: '#475569' }} allowDecimals={false} />
+            <Tooltip labelStyle={{ fontWeight: 700 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Bar dataKey="pipeline" stackId="a" name="Core Pipeline" fill={PIPE_BLUE} radius={[0, 0, 0, 0]} />
+            <Bar dataKey="otros" stackId="a" name="Otros" fill={OTROS_GRAY} radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Top 10 + mapa */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="rounded-lg border border-steel-200 bg-white p-4 shadow-sm">
-          <SectionTitle>Top 10 proyectos por inversión (MUSD)</SectionTitle>
+          <SectionTitle
+            right={
+              <span className="flex items-center gap-3 text-[11px] text-steel-500">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block h-2.5 w-4 rounded-sm" style={{ backgroundColor: PIPE_BLUE }} /> Pipeline
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block h-2.5 w-4 rounded-sm" style={{ backgroundColor: OTROS_GRAY }} /> Otros
+                </span>
+              </span>
+            }
+          >
+            Top 10 proyectos por inversión · {scopeLabel} (MUSD)
+          </SectionTitle>
           <ResponsiveContainer width="100%" height={380}>
             <BarChart data={top10} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
@@ -138,7 +259,11 @@ export function Dashboard() {
                 tickFormatter={(v: string) => (v.length > 34 ? `${v.slice(0, 33)}…` : v)}
               />
               <Tooltip formatter={(value) => [fmtMusd(Number(value)), 'Inversión']} labelStyle={{ fontWeight: 700 }} />
-              <Bar dataKey="investmentMUSD" fill="#1e4265" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="investmentMUSD" radius={[0, 3, 3, 0]}>
+                {top10.map((p) => (
+                  <Cell key={p.id} fill={p.categoria === 'pipeline' ? PIPE_BLUE : OTROS_GRAY} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -151,9 +276,9 @@ export function Dashboard() {
               </Link>
             }
           >
-            Distribución regional
+            Distribución regional · {scopeLabel}
           </SectionTitle>
-          <ChileMap list={actionableProjects} />
+          <ChileMap list={scActionable} />
         </div>
       </div>
     </div>

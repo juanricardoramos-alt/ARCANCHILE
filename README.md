@@ -12,13 +12,24 @@ npm run build    # type-check + build de producción
 
 **Acceso demo (login simulado, sin backend):** usuario `admin` · contraseña `arcanchile2026`
 
+### Clasificación Core Pipeline vs Otros
+
+Cada uno de los 69 proyectos está clasificado según el core de ARCANCHILE (ingeniería e inspección de **ductos / pipeline**):
+
+- **`categoria`**: `pipeline` (47 proyectos con componente de ductos/piping) u `otros` (22 sin relación con ductos).
+- **`relevanciaArcanchile`**: `alta` (ductos puros: acueductos, mineroductos, inspección de cañerías — 14 proyectos), `media` (incluye piping de proceso pero no es exclusivo, p. ej. una concentradora — 33), `baja` (sin ductos — 22).
+- Cada proyecto pipeline incluye el **componente de ductos concreto**, las **normativas aplicables** (ASME B31.1/.3/.4/.8/.11/.12, API 510/570/574/579/650/653/1104, ASME IX, AWWA) y los **servicios de ductos** que aplican.
+
+La clasificación vive en `src/data/pipelineClassification.ts` y se fusiona con los proyectos en `src/data/enriched.ts` (fuente única para toda la app).
+
 | Vista | Contenido |
 |---|---|
-| Dashboard | KPIs (oportunidades, inversión, prioridad A/B/C, sectores, regiones), inversión por sector, dona por estado, top 10 por inversión y mapa esquemático de Chile |
-| Proyectos | Catálogo con búsqueda libre, filtros (sector, región, servicio, estado, prioridad, rango de inversión), vista tabla/tarjetas, orden por columnas y exportación CSV |
-| Detalle | Ficha completa, servicios ARCANCHILE aplicables, fuente original, relacionados y botón "Marcar como contactado" (estado local persistente) |
+| Dashboard | Filtro principal **Todos / Core Pipeline / Otros**; KPIs separados Pipeline vs Otros; inversión por sector, dona por estado, **barra apilada Pipeline vs Otros por sector**, top 10 (coloreado por categoría) y mapa esquemático de Chile |
+| Proyectos | Catálogo con **toggle prominente "Solo Pipeline/Ductos"**, filtros (relevancia, sector, región, servicio, estado, prioridad, inversión), badge/borde azul de pipeline, **columna Relevancia**, y chips de servicio de ductos al filtrar por pipeline; vista tabla/tarjetas, orden por columnas y exportación CSV (con columnas de clasificación) |
+| Pipeline | **Página dedicada al core**: oportunidades de ductos organizadas por tipo de servicio (Diseño, END, QA/QC, ITO, Inspección en servicio, Comisionamiento), con relevancia, cronograma y normativas |
+| Detalle | Ficha completa, **sección "Componente Pipeline/Ductos"** con normativas y servicios de ductos, servicios ARCANCHILE, fuente, relacionados y botón "Marcar como contactado" (persistente) |
 | Empresas | Directorio de mandantes, EPCs y organismos con vías de inscripción de proveedores y links a portales |
-| Plan de Acción | Timeline de 90 días, checklist interactivo (persistente) y tabla maestra A/B/C con filtros |
+| Plan de Acción | Timeline de 90 días, checklist interactivo (persistente) y tabla maestra A/B/C con filtros (marca los proyectos pipeline) |
 | Alertas | Licitaciones activas con la alerta ENAP destacada como prioritaria y plan de monitoreo |
 
 ---

@@ -1,12 +1,14 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { PipeIcon } from './ui';
 
 const links = [
-  { to: '/', label: 'Dashboard', end: true },
-  { to: '/catalogo', label: 'Proyectos' },
-  { to: '/empresas', label: 'Empresas' },
-  { to: '/plan', label: 'Plan de Acción' },
-  { to: '/alertas', label: 'Alertas' },
+  { to: '/', label: 'Dashboard', end: true, pipe: false },
+  { to: '/catalogo', label: 'Proyectos', pipe: false },
+  { to: '/pipeline', label: 'Pipeline', pipe: true },
+  { to: '/empresas', label: 'Empresas', pipe: false },
+  { to: '/plan', label: 'Plan de Acción', pipe: false },
+  { to: '/alertas', label: 'Alertas', pipe: false },
 ];
 
 export function Logo({ dark = false }: { dark?: boolean }) {
@@ -39,11 +41,18 @@ export function Layout() {
                 to={l.to}
                 end={l.end}
                 className={({ isActive }) =>
-                  `rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-                    isActive ? 'bg-amber-500 text-navy-950' : 'text-steel-300 hover:bg-navy-800 hover:text-white'
+                  `flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? l.pipe
+                        ? 'bg-sky-500 text-navy-950'
+                        : 'bg-amber-500 text-navy-950'
+                      : l.pipe
+                        ? 'text-sky-300 hover:bg-navy-800 hover:text-sky-100'
+                        : 'text-steel-300 hover:bg-navy-800 hover:text-white'
                   }`
                 }
               >
+                {l.pipe && <PipeIcon className="h-4 w-4" />}
                 {l.label}
               </NavLink>
             ))}

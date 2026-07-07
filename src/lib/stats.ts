@@ -1,13 +1,21 @@
-import { projects } from '../data/projects';
-import type { Priority, Project } from '../data/types';
+import { enrichedProjects } from '../data/enriched';
+import type { EnrichedProject, Priority, Project, RelevanciaArcanchile } from '../data/types';
+
+export const allProjects = enrichedProjects;
 
 /** Proyectos no desistidos (se muestran en catálogo). */
-export const activeProjects = projects.filter((p) => p.stage !== 'Desistido');
+export const activeProjects = enrichedProjects.filter((p) => p.stage !== 'Desistido');
 
 /** Proyectos accionables para KPIs/gráficos (excluye desistidos y suspendidos). */
-export const actionableProjects = projects.filter(
+export const actionableProjects = enrichedProjects.filter(
   (p) => p.stage !== 'Desistido' && p.stage !== 'Suspendido / En riesgo',
 );
+
+// ── Cortes Pipeline vs Otros ──
+export const pipelineActive = activeProjects.filter((p) => p.categoria === 'pipeline');
+export const otrosActive = activeProjects.filter((p) => p.categoria === 'otros');
+export const pipelineActionable = actionableProjects.filter((p) => p.categoria === 'pipeline');
+export const otrosActionable = actionableProjects.filter((p) => p.categoria === 'otros');
 
 export function fmtMusd(v: number | null): string {
   if (v === null) return 's/d';
@@ -31,6 +39,20 @@ export function investmentBySector(list: Project[]): { sector: string; inversion
     .sort((a, b) => b.inversion - a.inversion);
 }
 
+/** Distribución de número de proyectos Pipeline vs Otros por sector (para barra apilada). */
+export function categoriaBySector(list: EnrichedProject[]): { sector: string; pipeline: number; otros: number }[] {
+  const map = new Map<string, { pipeline: number; otros: number }>();
+  for (const p of list) {
+    const e = map.get(p.sector) ?? { pipeline: 0, otros: 0 };
+    if (p.categoria === 'pipeline') e.pipeline += 1;
+    else e.otros += 1;
+    map.set(p.sector, e);
+  }
+  return [...map.entries()]
+    .map(([sector, e]) => ({ sector, ...e }))
+    .sort((a, b) => b.pipeline + b.otros - (a.pipeline + a.otros));
+}
+
 export function projectsByStage(list: Project[]): { stage: string; count: number }[] {
   const map = new Map<string, number>();
   for (const p of list) map.set(p.stage, (map.get(p.stage) ?? 0) + 1);
@@ -43,7 +65,13 @@ export function projectsByPriority(list: Project[]): Record<Priority, number> {
   return acc;
 }
 
-export function topByInvestment(list: Project[], n: number): Project[] {
+export function relevanciaCounts(list: EnrichedProject[]): Record<RelevanciaArcanchile, number> {
+  const acc: Record<RelevanciaArcanchile, number> = { alta: 0, media: 0, baja: 0 };
+  for (const p of list) acc[p.relevanciaArcanchile] += 1;
+  return acc;
+}
+
+export function topByInvestment<T extends Project>(list: T[], n: number): T[] {
   return [...list]
     .filter((p) => p.investmentMUSD !== null)
     .sort((a, b) => (b.investmentMUSD ?? 0) - (a.investmentMUSD ?? 0))
@@ -61,10 +89,12 @@ export function investmentByRegion(list: Project[]): Map<string, { count: number
   return map;
 }
 
-export function exportProjectsCsv(list: Project[]): void {
+export function exportProjectsCsv(list: EnrichedProject[]): void {
   const header = [
     'Nombre',
     'Mandante',
+    'Categoría',
+    'Relevancia ARCANCHILE',
     'Sector',
     'Región',
     'Inversión (MUSD)',
@@ -73,6 +103,8 @@ export function exportProjectsCsv(list: Project[]): void {
     'Prioridad',
     'Cronograma',
     'Servicios ARCANCHILE',
+    'Componente pipeline',
+    'Normativas',
     'Fuente',
   ];
   const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
@@ -80,6 +112,8 @@ export function exportProjectsCsv(list: Project[]): void {
     [
       esc(p.name),
       esc(p.owner),
+      p.categoria === 'pipeline' ? 'Core Pipeline' : 'Otros',
+      p.relevanciaArcanchile,
       esc(p.sector),
       esc(p.region),
       p.investmentMUSD ?? '',
@@ -88,6 +122,8 @@ export function exportProjectsCsv(list: Project[]): void {
       p.priority,
       esc(p.timeline),
       esc(p.services.join(' | ')),
+      esc(p.pipelineComponent),
+      esc(p.normativas.join(' | ')),
       esc(p.sourceUrl),
     ].join(';'),
   );

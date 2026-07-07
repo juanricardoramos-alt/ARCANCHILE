@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { checklist, timelinePhases } from '../data/actionPlan';
-import { projects } from '../data/projects';
+import { enrichedProjects as projects } from '../data/enriched';
 import type { Priority } from '../data/types';
 import { fmtMusd } from '../lib/stats';
-import { PriorityBadge, SectionTitle, StageBadge } from '../components/ui';
+import { PipeBadge, PriorityBadge, SectionTitle, StageBadge } from '../components/ui';
 import { useApp } from '../context/AppContext';
 
 export function ActionPlan() {
@@ -152,9 +152,12 @@ export function ActionPlan() {
                     <PriorityBadge priority={p.priority} />
                   </td>
                   <td className="px-3 py-2 text-sm font-semibold text-navy-900">
-                    <Link to={`/proyectos/${p.id}`} className="hover:text-amber-600 hover:underline">
-                      {p.name}
-                    </Link>
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      {p.categoria === 'pipeline' && <PipeBadge compact />}
+                      <Link to={`/proyectos/${p.id}`} className="hover:text-amber-600 hover:underline">
+                        {p.name}
+                      </Link>
+                    </span>
                   </td>
                   <td className="max-w-52 truncate px-3 py-2 text-sm text-steel-600">{p.owner}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-sm font-bold text-navy-800">

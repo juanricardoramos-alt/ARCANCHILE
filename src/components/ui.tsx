@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Priority, Stage } from '../data/types';
+import type { Priority, RelevanciaArcanchile, Stage } from '../data/types';
 
 export function PriorityBadge({ priority, size = 'sm' }: { priority: Priority; size?: 'sm' | 'lg' }) {
   const styles: Record<Priority, string> = {
@@ -48,6 +48,78 @@ export function StageBadge({ stage }: { stage: Stage }) {
 export function ServiceChip({ label }: { label: string }) {
   return (
     <span className="inline-block rounded bg-navy-800 px-2 py-0.5 text-[11px] font-medium text-navy-100">{label}</span>
+  );
+}
+
+/** Chip azul para servicios específicos de pipeline/ductos. */
+export function PipelineServiceChip({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded border border-sky-300 bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-800">
+      <PipeIcon className="h-3 w-3" />
+      {label}
+    </span>
+  );
+}
+
+export function NormativaChip({ label }: { label: string }) {
+  return (
+    <span className="inline-block rounded border border-steel-300 bg-white px-2 py-0.5 font-mono text-[11px] font-semibold text-steel-700">
+      {label}
+    </span>
+  );
+}
+
+/** Ícono de segmento de tubería (pipeline). */
+export function PipeIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className={className} aria-hidden>
+      <rect x="2" y="8.5" width="20" height="7" rx="1.5" />
+      <line x1="7" y1="8.5" x2="7" y2="15.5" />
+      <line x1="17" y1="8.5" x2="17" y2="15.5" />
+    </svg>
+  );
+}
+
+/** Badge distintivo para proyectos del core Pipeline/Ductos. */
+export function PipeBadge({ compact = false }: { compact?: boolean }) {
+  return (
+    <span
+      title="Core ARCANCHILE — proyecto con componente de ductos / pipeline"
+      className="inline-flex items-center gap-1 rounded-full border border-sky-400 bg-sky-100 px-2 py-0.5 text-[11px] font-bold text-sky-800"
+    >
+      <PipeIcon className="h-3.5 w-3.5" />
+      {!compact && 'Pipeline'}
+    </span>
+  );
+}
+
+const relevanceMeta: Record<RelevanciaArcanchile, { dots: number; color: string; label: string }> = {
+  alta: { dots: 3, color: '#0369a1', label: 'Relevancia alta · core ductos' },
+  media: { dots: 2, color: '#0ea5e9', label: 'Relevancia media · incluye piping' },
+  baja: { dots: 1, color: '#cbd5e1', label: 'Relevancia baja · fuera del core' },
+};
+
+export function RelevanceIndicator({
+  r,
+  showLabel = false,
+}: {
+  r: RelevanciaArcanchile;
+  showLabel?: boolean;
+}) {
+  const m = relevanceMeta[r];
+  return (
+    <span className="inline-flex items-center gap-1.5" title={m.label}>
+      <span className="flex items-center gap-0.5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="inline-block h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: i < m.dots ? m.color : '#e2e8f0' }}
+          />
+        ))}
+      </span>
+      {showLabel && <span className="text-xs font-semibold capitalize text-steel-600">{r}</span>}
+    </span>
   );
 }
 

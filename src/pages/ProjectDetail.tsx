@@ -1,13 +1,24 @@
 import { Link, useParams } from 'react-router-dom';
-import { projects } from '../data/projects';
+import { enrichedProjects } from '../data/enriched';
 import { fmtMusd } from '../lib/stats';
-import { PriorityBadge, SectionTitle, ServiceChip, StageBadge, UnconfirmedFlag } from '../components/ui';
+import {
+  NormativaChip,
+  PipeBadge,
+  PipeIcon,
+  PipelineServiceChip,
+  PriorityBadge,
+  RelevanceIndicator,
+  SectionTitle,
+  ServiceChip,
+  StageBadge,
+  UnconfirmedFlag,
+} from '../components/ui';
 import { useApp } from '../context/AppContext';
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { contacted, toggleContacted } = useApp();
-  const project = projects.find((p) => p.id === id);
+  const project = enrichedProjects.find((p) => p.id === id);
 
   if (!project) {
     return (
@@ -20,12 +31,13 @@ export function ProjectDetail() {
     );
   }
 
-  const related = projects
+  const related = enrichedProjects
     .filter((p) => p.sector === project.sector && p.id !== project.id && p.stage !== 'Desistido')
     .sort((a, b) => (b.investmentMUSD ?? -1) - (a.investmentMUSD ?? -1))
     .slice(0, 4);
 
   const isContacted = contacted.has(project.id);
+  const isPipeline = project.categoria === 'pipeline';
 
   return (
     <div className="space-y-6">
@@ -33,12 +45,13 @@ export function ProjectDetail() {
         ← Volver al catálogo
       </Link>
 
-      <div className="rounded-lg border border-steel-200 bg-white p-6 shadow-sm">
+      <div className={`rounded-lg border bg-white p-6 shadow-sm ${isPipeline ? 'border-sky-300 border-t-4 border-t-sky-500' : 'border-steel-200'}`}>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <PriorityBadge priority={project.priority} size="lg" />
               <StageBadge stage={project.stage} />
+              {isPipeline && <PipeBadge />}
               {project.unconfirmed && <UnconfirmedFlag />}
             </div>
             <h1 className="mt-3 text-2xl font-black leading-tight text-navy-900">{project.name}</h1>
@@ -96,6 +109,51 @@ export function ProjectDetail() {
           </p>
         </div>
 
+        {/* Componente Pipeline / Ductos */}
+        {isPipeline ? (
+          <div className="mt-6 rounded-lg border-2 border-sky-200 bg-sky-50/60 p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-sky-800">
+                <PipeIcon className="h-5 w-5" /> Componente Pipeline / Ductos
+              </h2>
+              <RelevanceIndicator r={project.relevanciaArcanchile} showLabel />
+            </div>
+            <p className="text-sm text-steel-700">{project.pipelineComponent}</p>
+
+            {project.pipelineServices.length > 0 && (
+              <div className="mt-4">
+                <div className="text-xs font-bold uppercase tracking-wide text-steel-500">
+                  Servicios de ductos de ARCANCHILE que aplican
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {project.pipelineServices.map((s) => (
+                    <PipelineServiceChip key={s} label={s} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {project.normativas.length > 0 && (
+              <div className="mt-4">
+                <div className="text-xs font-bold uppercase tracking-wide text-steel-500">Normativas aplicables</div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {project.normativas.map((n) => (
+                    <NormativaChip key={n} label={n} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-lg border border-steel-200 bg-steel-50 p-4">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-steel-600">Componente Pipeline / Ductos</h2>
+            <p className="mt-1 text-sm text-steel-500">
+              Este proyecto está <strong>fuera del core de ductos/pipeline</strong> de ARCANCHILE (transmisión, obra civil,
+              edificación o monitoreo sin cañerías). Se rastrea para posibles alianzas o servicios complementarios.
+            </p>
+          </div>
+        )}
+
         <div className="mt-6">
           <SectionTitle>Servicios ARCANCHILE aplicables</SectionTitle>
           {project.services.length > 0 ? (
@@ -121,7 +179,9 @@ export function ProjectDetail() {
               <Link
                 key={p.id}
                 to={`/proyectos/${p.id}`}
-                className="group rounded-lg border border-steel-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md"
+                className={`group rounded-lg border bg-white p-3 shadow-sm transition-shadow hover:shadow-md ${
+                  p.categoria === 'pipeline' ? 'border-sky-300 border-l-4 border-l-sky-500' : 'border-steel-200'
+                }`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-sm font-bold leading-snug text-navy-900 group-hover:text-amber-600">{p.name}</span>
