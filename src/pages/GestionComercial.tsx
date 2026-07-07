@@ -11,25 +11,25 @@ import {
   telHref,
   waHref,
 } from '../lib/realContacts';
-import { CRM_LABEL, SECTOR_LABEL } from '../data/types';
-import type { ContactoNivel, ContactOrigen, ContactSector, CrmState } from '../data/types';
+import { CRM_LABEL, CRM_STATES, SECTOR_LABEL } from '../data/types';
+import type { ContactoNivel, ContactSector, CrmState } from '../data/types';
+import { CRM_COLOR } from '../lib/crm';
 import { useApp } from '../context/AppContext';
 import { ContactoNivelBadge, KpiCard, LinkedInIcon, OrigenBadge, PipeBadge, SectionTitle } from '../components/ui';
-import { CrmControl } from '../components/CrmControl';
+import { CrmManager } from '../components/CrmManager';
 
-const FUNNEL: { state: CrmState; color: string }[] = [
-  { state: 'pendiente', color: '#94a3b8' },
-  { state: 'contactado', color: '#0ea5e9' },
-  { state: 'reunion', color: '#f59e0b' },
-  { state: 'propuesta', color: '#8b5cf6' },
-  { state: 'seguimiento', color: '#10b981' },
-];
-
+const FUNNEL = CRM_STATES.map((state) => ({ state, color: CRM_COLOR[state] }));
 const NIVELES: ContactoNivel[] = ['decisor', 'influenciador', 'tecnico', 'acceso'];
 const SECTORES: ContactSector[] = ['MINERO', 'EPC', 'ENERGIA', 'OIL_GAS', 'PIPELINE', 'AGUA', 'CELULOSA', 'INSPECCION', 'INDUSTRIAL'];
 
+const EN_GESTION: CrmState[] = ['contactado', 'respuesta', 'reunion_agendada', 'reunion_realizada', 'propuesta', 'negociacion'];
+
+function emptyCounts(): Record<CrmState, number> {
+  return Object.fromEntries(CRM_STATES.map((s) => [s, 0])) as Record<CrmState, number>;
+}
+
 export function GestionComercial() {
-  const { crm } = useApp();
+  const { usuario } = useApp();
   const [mode, setMode] = useState<'reales' | 'perfiles'>('reales');
 
   return (
@@ -39,7 +39,7 @@ export function GestionComercial() {
           <h1 className="text-2xl font-black text-navy-900">Gestión comercial · CRM de contactos</h1>
           <p className="text-sm text-steel-500">
             {mode === 'reales'
-              ? `${contactosReales.length} contactos reales de ARCANCHILE (BBDD LinkedIn + asistentes al evento Pipeline II)`
+              ? `${contactosReales.length} contactos reales de ARCANCHILE (BBDD LinkedIn + evento Pipeline II) · gestionando como ${usuario}`
               : 'Perfiles de cargos objetivo por proyecto (cuándo no hay contacto real, a quién buscar)'}
           </p>
         </div>
@@ -59,13 +59,38 @@ export function GestionComercial() {
         </div>
       </div>
 
-      {mode === 'reales' ? <RealesView crm={crm} /> : <PerfilesView crm={crm} />}
+      {mode === 'reales' ? <RealesView /> : <PerfilesView />}
+    </div>
+  );
+}
+
+function Funnel({ counts }: { counts: Record<CrmState, number> }) {
+  const max = Math.max(1, ...FUNNEL.map((s) => counts[s.state]));
+  return (
+    <div className="rounded-lg border border-steel-200 bg-white p-4 shadow-sm">
+      <SectionTitle>Embudo de gestión (vista actual)</SectionTitle>
+      <div className="space-y-1.5">
+        {FUNNEL.map((s) => (
+          <div key={s.state} className="flex items-center gap-2 sm:gap-3">
+            <span className="w-28 shrink-0 text-[11px] font-semibold text-steel-600 sm:w-40 sm:text-xs">{CRM_LABEL[s.state]}</span>
+            <div className="h-5 flex-1 overflow-hidden rounded bg-steel-100 sm:h-6">
+              <div
+                className="flex h-full items-center justify-end rounded px-2 text-[11px] font-bold text-white"
+                style={{ width: `${Math.max(4, (counts[s.state] / max) * 100)}%`, backgroundColor: s.color }}
+              >
+                {counts[s.state]}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 // ───────────────────────── Contactos reales (BBDD) ─────────────────────────
-function RealesView({ crm }: { crm: Record<string, CrmState> }) {
+function RealesView() {
+  const { crmState } = useApp();
   const [q, setQ] = useState('');
   const [origen, setOrigen] = useState('');
   const [sector, setSector] = useState('');
@@ -75,12 +100,12 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
   const [estado, setEstado] = useState('');
   const [soloVinculados, setSoloVinculados] = useState(false);
 
-  const stateOf = (c: (typeof contactosReales)[number]) => realStateOf(crm, c);
+  const stateOf = (c: (typeof contactosReales)[number]) => realStateOf(crmState, c);
 
   const filtered = useMemo(() => {
     const text = q.trim().toLowerCase();
     return contactosReales.filter((c) => {
-      if (origen && c.origen !== origen && !(origen === 'Pipeline II' && c.origen === 'Ambas') && !(origen === 'LinkedIn' && c.origen === 'Ambas')) return false;
+      if (origen && c.origen !== origen && c.origen !== 'Ambas') return false;
       if (sector && c.sector !== sector) return false;
       if (empresa && c.empresa !== empresa) return false;
       if (nivel && c.nivel !== nivel) return false;
@@ -94,15 +119,17 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
       return true;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, origen, sector, empresa, nivel, prioridad, estado, soloVinculados, crm]);
+  }, [q, origen, sector, empresa, nivel, prioridad, estado, soloVinculados, crmState]);
 
   const counts = useMemo(() => {
-    const acc: Record<CrmState, number> = { pendiente: 0, contactado: 0, reunion: 0, propuesta: 0, seguimiento: 0 };
+    const acc = emptyCounts();
     for (const c of filtered) acc[stateOf(c)] += 1;
     return acc;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtered, crm]);
-  const maxFunnel = Math.max(1, ...FUNNEL.map((s) => counts[s.state]));
+  }, [filtered, crmState]);
+
+  const enGestion = EN_GESTION.reduce((n, s) => n + counts[s], 0);
+  const reuniones = counts.reunion_agendada + counts.reunion_realizada;
 
   return (
     <>
@@ -117,30 +144,13 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <KpiCard label="Pendientes" value={counts.pendiente} sub="sin gestionar" />
-        <KpiCard label="Contactados" value={counts.contactado} />
-        <KpiCard label="Reuniones agendadas" value={counts.reunion} accent />
-        <KpiCard label="Propuestas enviadas" value={counts.propuesta} />
-        <KpiCard label="En seguimiento" value={counts.seguimiento} />
+        <KpiCard label="En gestión" value={enGestion} sub="contactado → negociación" accent />
+        <KpiCard label="Reuniones" value={reuniones} sub="agendadas + realizadas" />
+        <KpiCard label="Adjudicados" value={counts.adjudicado} />
+        <KpiCard label="Descartados" value={counts.descartado} />
       </div>
 
-      <div className="rounded-lg border border-steel-200 bg-white p-4 shadow-sm">
-        <SectionTitle>Embudo de gestión (vista actual)</SectionTitle>
-        <div className="space-y-2">
-          {FUNNEL.map((s) => (
-            <div key={s.state} className="flex items-center gap-3">
-              <span className="w-40 shrink-0 text-xs font-semibold text-steel-600">{CRM_LABEL[s.state]}</span>
-              <div className="h-6 flex-1 overflow-hidden rounded bg-steel-100">
-                <div
-                  className="flex h-full items-center justify-end rounded px-2 text-[11px] font-bold text-white"
-                  style={{ width: `${Math.max(4, (counts[s.state] / maxFunnel) * 100)}%`, backgroundColor: s.color }}
-                >
-                  {counts[s.state]}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Funnel counts={counts} />
 
       {/* Filtros */}
       <div className="grid grid-cols-2 items-center gap-2 rounded-lg border border-steel-200 bg-white p-3 shadow-sm sm:flex sm:flex-wrap [&>select]:w-full sm:[&>select]:w-auto">
@@ -175,8 +185,8 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
         </select>
         <select value={estado} onChange={(e) => setEstado(e.target.value)} className="rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500">
           <option value="">Todo estado</option>
-          {FUNNEL.map((s) => (
-            <option key={s.state} value={s.state}>{CRM_LABEL[s.state]}</option>
+          {CRM_STATES.map((s) => (
+            <option key={s} value={s}>{CRM_LABEL[s]}</option>
           ))}
         </select>
         <select value={empresa} onChange={(e) => setEmpresa(e.target.value)} className="max-w-52 rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500">
@@ -241,9 +251,9 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
                     Email
                   </a>
                 )}
-                <span className="ml-auto">
-                  <CrmControl contactKey={realKey(c)} initial={c.crmInicial} />
-                </span>
+              </div>
+              <div className="mt-3 border-t border-steel-100 pt-2">
+                <CrmManager contactKey={realKey(c)} title={c.nombre} subtitle={`${c.cargo} · ${c.empresa}`} />
               </div>
             </div>
           );
@@ -264,7 +274,7 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Empresa / sector</th>
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Teléfono</th>
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Proyectos</th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Estado</th>
+              <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Estado / gestión</th>
             </tr>
           </thead>
           <tbody>
@@ -321,7 +331,7 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
                     )}
                   </td>
                   <td className="px-3 py-2">
-                    <CrmControl contactKey={realKey(c)} initial={c.crmInicial} />
+                    <CrmManager contactKey={realKey(c)} title={c.nombre} subtitle={`${c.cargo} · ${c.empresa}`} />
                   </td>
                 </tr>
               );
@@ -339,16 +349,16 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
 
       <p className="text-[11px] text-steel-400">
         Contactos reales de la BBDD comercial de ARCANCHILE (prospección LinkedIn + asistentes al evento Pipeline II de
-        MineGroup). El estado inicial se derivó de las notas de gestión originales; los cambios se guardan localmente en este
-        navegador. Teléfonos habilitados para llamada y WhatsApp; correos con enlace directo.
+        MineGroup). Todos parten en estado <strong>Pendiente</strong>. Cada cambio de estado exige una nota y queda registrado
+        con fecha y usuario en el historial del contacto. Teléfonos con llamada/WhatsApp; correos con enlace directo.
       </p>
     </>
   );
 }
 
 // ───────────────────────── Perfiles objetivo (cargos) ─────────────────────────
-function PerfilesView({ crm }: { crm: Record<string, CrmState> }) {
-  const stateOf = (key: string): CrmState => crm[key] ?? 'pendiente';
+function PerfilesView() {
+  const { stateOf } = useApp();
   const [empresa, setEmpresa] = useState('');
   const [nivel, setNivel] = useState('');
   const [prioridad, setPrioridad] = useState('1');
@@ -383,8 +393,8 @@ function PerfilesView({ crm }: { crm: Record<string, CrmState> }) {
           ⬇ Exportar perfiles CSV
         </button>
       </div>
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-steel-200 bg-white p-3 shadow-sm">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar proyecto, empresa o cargo…" className="min-w-52 flex-1 rounded border border-steel-300 px-3 py-1.5 text-sm outline-none focus:border-amber-500" />
+      <div className="grid grid-cols-2 items-center gap-2 rounded-lg border border-steel-200 bg-white p-3 shadow-sm sm:flex sm:flex-wrap [&>select]:w-full sm:[&>select]:w-auto">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar proyecto, empresa o cargo…" className="col-span-2 w-full rounded border border-steel-300 px-3 py-1.5 text-sm outline-none focus:border-amber-500 sm:w-auto sm:min-w-52 sm:flex-1" />
         <select value={prioridad} onChange={(e) => setPrioridad(e.target.value)} className="rounded border border-steel-300 bg-white px-2 py-1.5 text-sm text-steel-700 outline-none focus:border-amber-500">
           <option value="">Toda prioridad</option>
           <option value="1">Prioridad 1</option>
@@ -408,7 +418,7 @@ function PerfilesView({ crm }: { crm: Record<string, CrmState> }) {
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Empresa</th>
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Cargo objetivo</th>
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Canal sugerido</th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Estado</th>
+              <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Estado / gestión</th>
             </tr>
           </thead>
           <tbody>
@@ -433,7 +443,7 @@ function PerfilesView({ crm }: { crm: Record<string, CrmState> }) {
                 </td>
                 <td className="max-w-64 px-3 py-2 text-xs text-steel-600">{f.c.canalSugerido}</td>
                 <td className="px-3 py-2">
-                  <CrmControl contactKey={f.key} />
+                  <CrmManager contactKey={f.key} title={f.c.cargo} subtitle={`${f.c.empresa} · ${f.projectName}`} />
                 </td>
               </tr>
             ))}

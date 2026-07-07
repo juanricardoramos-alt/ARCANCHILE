@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ContactoNivel, CrmState, Priority, RelevanciaArcanchile, Stage } from '../data/types';
 import { CRM_LABEL } from '../data/types';
+import { CRM_BADGE_CLASS } from '../lib/crm';
 
 export function PriorityBadge({ priority, size = 'sm' }: { priority: Priority; size?: 'sm' | 'lg' }) {
   const styles: Record<Priority, string> = {
@@ -206,16 +207,10 @@ export function LinkedInIcon({ className = 'h-4 w-4' }: { className?: string }) 
   );
 }
 
-const crmMeta: Record<CrmState, string> = {
-  pendiente: 'bg-steel-100 text-steel-600 border-steel-300',
-  contactado: 'bg-sky-100 text-sky-700 border-sky-300',
-  reunion: 'bg-amber-100 text-amber-700 border-amber-300',
-  propuesta: 'bg-violet-100 text-violet-700 border-violet-300',
-  seguimiento: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-};
-
 export function CrmBadge({ state }: { state: CrmState }) {
-  return <span className={`inline-block whitespace-nowrap rounded border px-2 py-0.5 text-[11px] font-semibold ${crmMeta[state]}`}>{CRM_LABEL[state]}</span>;
+  return (
+    <span className={`inline-block whitespace-nowrap rounded border px-2 py-0.5 text-[11px] font-semibold ${CRM_BADGE_CLASS[state]}`}>
+      {CRM_LABEL[state]}
+    </span>
+  );
 }
-
-export const crmSelectClass: Record<CrmState, string> = crmMeta;

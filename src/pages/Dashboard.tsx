@@ -27,7 +27,8 @@ import {
 } from '../lib/stats';
 import { contactosReales, realStateOf } from '../lib/realContacts';
 import type { Categoria, CrmState } from '../data/types';
-import { CRM_LABEL } from '../data/types';
+import { CRM_LABEL, CRM_STATES } from '../data/types';
+import { CRM_COLOR } from '../lib/crm';
 import { KpiCard, PipeIcon, SectionTitle } from '../components/ui';
 import { ChileMap } from '../components/ChileMap';
 import { useApp } from '../context/AppContext';
@@ -51,22 +52,16 @@ type Scope = 'todos' | Categoria;
 const PIPE_BLUE = '#0369a1';
 const OTROS_GRAY = '#94a3b8';
 
-const FUNNEL: { state: CrmState; color: string }[] = [
-  { state: 'pendiente', color: '#94a3b8' },
-  { state: 'contactado', color: '#0ea5e9' },
-  { state: 'reunion', color: '#f59e0b' },
-  { state: 'propuesta', color: '#8b5cf6' },
-  { state: 'seguimiento', color: '#10b981' },
-];
+const FUNNEL = CRM_STATES.map((state) => ({ state, color: CRM_COLOR[state] }));
 
 export function Dashboard() {
   const [scope, setScope] = useState<Scope>('todos');
-  const { crm } = useApp();
+  const { crmState } = useApp();
   const isMobile = useIsMobile();
 
   // CRM: contactos reales de la BBDD
-  const crmCounts: Record<CrmState, number> = { pendiente: 0, contactado: 0, reunion: 0, propuesta: 0, seguimiento: 0 };
-  for (const c of contactosReales) crmCounts[realStateOf(crm, c)] += 1;
+  const crmCounts = Object.fromEntries(CRM_STATES.map((s) => [s, 0])) as Record<CrmState, number>;
+  for (const c of contactosReales) crmCounts[realStateOf(crmState, c)] += 1;
   const maxFunnel = Math.max(1, ...FUNNEL.map((s) => crmCounts[s.state]));
 
   const inScope = (categoria: Categoria) => scope === 'todos' || scope === categoria;

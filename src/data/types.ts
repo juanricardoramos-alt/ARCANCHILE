@@ -154,17 +154,54 @@ export interface ContactoClave {
   empresa: string;
 }
 
-export type CrmState = 'pendiente' | 'contactado' | 'reunion' | 'propuesta' | 'seguimiento';
+export type CrmState =
+  | 'pendiente'
+  | 'contactado'
+  | 'respuesta'
+  | 'reunion_agendada'
+  | 'reunion_realizada'
+  | 'propuesta'
+  | 'negociacion'
+  | 'adjudicado'
+  | 'descartado';
 
-export const CRM_STATES: CrmState[] = ['pendiente', 'contactado', 'reunion', 'propuesta', 'seguimiento'];
+/** Estados del embudo, en orden. */
+export const CRM_STATES: CrmState[] = [
+  'pendiente',
+  'contactado',
+  'respuesta',
+  'reunion_agendada',
+  'reunion_realizada',
+  'propuesta',
+  'negociacion',
+  'adjudicado',
+  'descartado',
+];
 
 export const CRM_LABEL: Record<CrmState, string> = {
   pendiente: 'Pendiente',
   contactado: 'Contactado',
-  reunion: 'Reunión agendada',
+  respuesta: 'Respuesta recibida',
+  reunion_agendada: 'Reunión agendada',
+  reunion_realizada: 'Reunión realizada',
   propuesta: 'Propuesta enviada',
-  seguimiento: 'En seguimiento',
+  negociacion: 'En negociación',
+  adjudicado: 'Adjudicado',
+  descartado: 'Descartado',
 };
+
+/** Registro de una actividad de gestión (cambio de estado / interacción). */
+export interface Activity {
+  id: string;
+  /** Fecha y hora ISO. */
+  fecha: string;
+  from: CrmState;
+  to: CrmState;
+  /** Nota obligatoria: qué se hizo, qué se habló, próximo paso (o motivo si se descarta). */
+  nota: string;
+  /** Usuario que registró la actividad. */
+  usuario: string;
+}
 
 /** Proyecto con la clasificación pipeline y los contactos clave fusionados. */
 export interface EnrichedProject extends Project, PipelineInfo {
@@ -211,8 +248,6 @@ export interface RealContact {
   cargo: string;
   nivel: ContactoNivel;
   prioridad: 1 | 2 | 3;
-  /** Estado CRM inicial derivado de la columna de gestión original de la BBDD. */
-  crmInicial: CrmState;
   /** Nota original de gestión / fuente. */
   nota: string;
   /** Proyectos de la plataforma cuya empresa coincide con la del contacto. */

@@ -8,9 +8,9 @@ export function realKey(c: RealContact): string {
   return `rc::${c.id}`;
 }
 
-/** Estado CRM efectivo: override guardado, o el estado inicial de la BBDD. */
+/** Estado CRM efectivo: override guardado, o 'pendiente' por defecto (todos parten en Pendiente). */
 export function realStateOf(crm: Record<string, CrmState>, c: RealContact): CrmState {
-  return crm[realKey(c)] ?? c.crmInicial;
+  return crm[realKey(c)] ?? 'pendiente';
 }
 
 export const realByProject: Record<string, RealContact[]> = (() => {

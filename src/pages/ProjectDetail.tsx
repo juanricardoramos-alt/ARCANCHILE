@@ -2,11 +2,10 @@ import { Link, useParams } from 'react-router-dom';
 import { enrichedProjects } from '../data/enriched';
 import { fmtMusd } from '../lib/stats';
 import { contactKey } from '../lib/contactos';
-import { realByProject, realKey, realStateOf, telHref, waHref } from '../lib/realContacts';
+import { realByProject, realKey, telHref, waHref } from '../lib/realContacts';
 import { SECTOR_LABEL } from '../data/types';
 import {
   ContactoNivelBadge,
-  CrmBadge,
   LinkedInIcon,
   OrigenBadge,
   NormativaChip,
@@ -20,12 +19,12 @@ import {
   StageBadge,
   UnconfirmedFlag,
 } from '../components/ui';
-import { CrmControl } from '../components/CrmControl';
+import { CrmManager } from '../components/CrmManager';
 import { useApp } from '../context/AppContext';
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
-  const { contacted, toggleContacted, crm } = useApp();
+  const { contacted, toggleContacted } = useApp();
   const project = enrichedProjects.find((p) => p.id === id);
 
   if (!project) {
@@ -225,7 +224,7 @@ export function ProjectDetail() {
                           </span>
                         </td>
                         <td className="px-3 py-2">
-                          <CrmBadge state={realStateOf(crm, c)} />
+                          <CrmManager contactKey={realKey(c)} title={c.nombre} subtitle={`${c.cargo} · ${c.empresa}`} />
                         </td>
                       </tr>
                     );
@@ -292,7 +291,7 @@ export function ProjectDetail() {
                       <td className="max-w-56 px-3 py-2 text-xs text-steel-600">{c.canalSugerido}</td>
                       <td className="max-w-md px-3 py-2 text-xs text-steel-600">{c.objetivo}</td>
                       <td className="px-3 py-2">
-                        <CrmControl contactKey={contactKey(project.id, c)} />
+                        <CrmManager contactKey={contactKey(project.id, c)} title={c.cargo} subtitle={c.empresa} />
                       </td>
                     </tr>
                   ))}

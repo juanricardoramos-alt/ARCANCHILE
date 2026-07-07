@@ -43,7 +43,13 @@ La plataforma maneja **dos capas** de contactos:
 
 2. **Perfiles objetivo** — `src/data/contactos.ts`: cargos genéricos (no personas) por arquetipo de empresa (`minero`, `epc`, `energia`, `enap`, `gas`, `estatal`, `industrial`), para saber a quién buscar cuando no hay un contacto real. Cada uno con `objetivo` de reunión y `canalSugerido`.
 
-La página **Gestión Comercial** alterna entre ambas capas (reales por defecto). El detalle de cada proyecto muestra sus contactos reales de la BBDD y, debajo, los perfiles objetivo. El estado CRM (Pendiente/Contactado/Reunión/Propuesta/Seguimiento) se guarda por contacto en `localStorage`; para los reales, el estado inicial es el derivado de la BBDD.
+La página **Gestión Comercial** alterna entre ambas capas (reales por defecto). El detalle de cada proyecto muestra sus contactos reales de la BBDD y, debajo, los perfiles objetivo.
+
+### CRM con registro de actividades
+
+Todos los contactos **parten en estado "Pendiente"** (el estado y el historial se guardan en `localStorage`; el modelo antiguo se limpia automáticamente en la migración). El embudo tiene **9 estados en orden**: Pendiente → Contactado → Respuesta recibida → Reunión agendada → Reunión realizada → Propuesta enviada → En negociación → Adjudicado → Descartado.
+
+Cada cambio de estado se hace desde un modal ("Gestionar") que **exige una nota obligatoria** (qué se hizo, qué se habló, próximo paso; o el motivo si se descarta) y registra una **actividad** con: fecha y hora automáticas, estado anterior → estado nuevo, la nota y el usuario (`Admin`, preparado para múltiples usuarios). El **historial** completo de cada contacto se ve en el mismo modal. Los contadores y el embudo del CRM y del Dashboard reflejan estos estados en vivo.
 
 ---
 
