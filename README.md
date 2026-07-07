@@ -1,3 +1,28 @@
+# ARCANCHILE — Plataforma de Oportunidades e Investigación de Mercado 2026-2030
+
+## Plataforma web (directorio)
+
+Aplicación interna para los directores de ARCANCHILE construida con **Vite + React + TypeScript + Tailwind CSS + Recharts**, con todos los datos de la investigación (69 oportunidades, 30 empresas, 10 licitaciones, plan de 90 días) importados desde los archivos de `informe/`.
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # type-check + build de producción
+```
+
+**Acceso demo (login simulado, sin backend):** usuario `admin` · contraseña `arcanchile2026`
+
+| Vista | Contenido |
+|---|---|
+| Dashboard | KPIs (oportunidades, inversión, prioridad A/B/C, sectores, regiones), inversión por sector, dona por estado, top 10 por inversión y mapa esquemático de Chile |
+| Proyectos | Catálogo con búsqueda libre, filtros (sector, región, servicio, estado, prioridad, rango de inversión), vista tabla/tarjetas, orden por columnas y exportación CSV |
+| Detalle | Ficha completa, servicios ARCANCHILE aplicables, fuente original, relacionados y botón "Marcar como contactado" (estado local persistente) |
+| Empresas | Directorio de mandantes, EPCs y organismos con vías de inscripción de proveedores y links a portales |
+| Plan de Acción | Timeline de 90 días, checklist interactivo (persistente) y tabla maestra A/B/C con filtros |
+| Alertas | Licitaciones activas con la alerta ENAP destacada como prioritaria y plan de monitoreo |
+
+---
+
 # Investigación de mercado — Oportunidades de Ingeniería e Inspección en Chile 2026-2030
 
 **Cliente**: ARCANCHILE — servicios de ingeniería (conceptual/básica/detalle, estructural/FEA, piping, mecánica, E&I, civil, escaneo láser 3D/BIM, terreno) e inspección (ITO, QA/QC, END UT/PAUT/MT/PT/RT/VT, drones, equipos a presión, comisionamiento, monitoreo geotécnico, inspección reglamentaria SEC/SERNAGEOMIN, peritajes).
