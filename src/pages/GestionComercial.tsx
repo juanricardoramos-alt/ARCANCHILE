@@ -225,7 +225,6 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
                   {c.projectIds.length > 3 && <span className="text-[11px] text-steel-400">+{c.projectIds.length - 3}</span>}
                 </div>
               )}
-              {c.nota && <div className="mt-2 text-[11px] text-steel-500">{c.nota}</div>}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {tel && (
                   <a href={tel} className="rounded bg-navy-900 px-3 py-1.5 text-xs font-bold text-white">
@@ -265,7 +264,6 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Empresa / sector</th>
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Teléfono</th>
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Proyectos</th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Nota BBDD</th>
               <th className="px-3 py-2 text-left text-xs font-bold uppercase text-navy-800">Estado</th>
             </tr>
           </thead>
@@ -322,7 +320,6 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
                       <span className="text-steel-400">—</span>
                     )}
                   </td>
-                  <td className="max-w-56 px-3 py-2 text-xs text-steel-500">{c.nota || '—'}</td>
                   <td className="px-3 py-2">
                     <CrmControl contactKey={realKey(c)} initial={c.crmInicial} />
                   </td>
@@ -331,7 +328,7 @@ function RealesView({ crm }: { crm: Record<string, CrmState> }) {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-sm text-steel-500">
+                <td colSpan={5} className="px-3 py-8 text-center text-sm text-steel-500">
                   No hay contactos para los filtros seleccionados.
                 </td>
               </tr>
