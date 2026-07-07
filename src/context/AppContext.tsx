@@ -21,6 +21,8 @@ interface AppState {
   activitiesOf: (key: string) => Activity[];
   /** Registra una actividad: cambia el estado y anota fecha/usuario/nota. */
   logActivity: (key: string, to: CrmState, nota: string) => void;
+  /** Reemplaza todo el estado CRM (para restaurar un backup). */
+  restoreCrm: (state: Record<string, CrmState>, activities: Record<string, Activity[]>) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -128,6 +130,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [crmState, usuario],
   );
 
+  const restoreCrm = useCallback(
+    (state: Record<string, CrmState>, activities: Record<string, Activity[]>) => {
+      setCrmState(state);
+      setCrmActivities(activities);
+      localStorage.setItem(CRM_STATE_KEY, JSON.stringify(state));
+      localStorage.setItem(CRM_ACT_KEY, JSON.stringify(activities));
+    },
+    [],
+  );
+
   const value = useMemo(
     () => ({
       isAuthed,
@@ -143,6 +155,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       stateOf,
       activitiesOf,
       logActivity,
+      restoreCrm,
     }),
     [
       isAuthed,
@@ -157,6 +170,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       stateOf,
       activitiesOf,
       logActivity,
+      restoreCrm,
     ],
   );
 

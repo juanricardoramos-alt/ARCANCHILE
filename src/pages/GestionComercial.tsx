@@ -17,6 +17,7 @@ import { CRM_COLOR } from '../lib/crm';
 import { useApp } from '../context/AppContext';
 import { ContactoNivelBadge, KpiCard, LinkedInIcon, OrigenBadge, PipeBadge, SectionTitle } from '../components/ui';
 import { CrmManager } from '../components/CrmManager';
+import { CrmActions } from '../components/CrmActions';
 
 const FUNNEL = CRM_STATES.map((state) => ({ state, color: CRM_COLOR[state] }));
 const NIVELES: ContactoNivel[] = ['decisor', 'influenciador', 'tecnico', 'acceso'];
@@ -57,6 +58,11 @@ export function GestionComercial() {
             Perfiles objetivo
           </button>
         </div>
+      </div>
+
+      {/* Barra de acciones: informe, backup y CSV */}
+      <div className="rounded-lg border border-steel-200 bg-white p-3 shadow-sm">
+        <CrmActions />
       </div>
 
       {mode === 'reales' ? <RealesView /> : <PerfilesView />}

@@ -51,6 +51,15 @@ Todos los contactos **parten en estado "Pendiente"** (el estado y el historial s
 
 Cada cambio de estado se hace desde un modal ("Gestionar") que **exige una nota obligatoria** (qué se hizo, qué se habló, próximo paso; o el motivo si se descarta) y registra una **actividad** con: fecha y hora automáticas, estado anterior → estado nuevo, la nota y el usuario (`Admin`, preparado para múltiples usuarios). El **historial** completo de cada contacto se ve en el mismo modal. Los contadores y el embudo del CRM y del Dashboard reflejan estos estados en vivo.
 
+### Barra de acciones del CRM
+
+Sobre la tabla hay una barra con cuatro acciones:
+
+- **🟡 Descargar Informe de Gestión** — abre un modal de filtros (período: última semana / último mes / todo / rango; sector; solo Pipeline; incluir descartados) y genera un **informe HTML corporativo** listo para imprimir o convertir a PDF (Ctrl+P). Incluye portada con logo, resumen ejecutivo con embudo SVG, KPIs, actividad reciente, pipeline activo, reuniones, propuestas (con montos autodetectados de las notas), descartados, alertas de seguimiento, y resúmenes por empresa y por sector, con estilo corporativo y CSS de impresión A4 (`src/lib/informe.ts`).
+- **⬇️ Exportar Backup CRM** — descarga un JSON con todo el estado y el historial de actividades (`backup_crm_ARCANCHILE_{fecha}.json`).
+- **⬆️ Importar Backup CRM** — restaura un backup previo (con confirmación y mensaje de éxito con conteos) (`src/lib/crmBackup.ts`).
+- **📊 Exportar CSV** — planilla de todos los contactos reales con su estado actual.
+
 ---
 
 # Investigación de mercado — Oportunidades de Ingeniería e Inspección en Chile 2026-2030
