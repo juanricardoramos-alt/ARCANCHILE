@@ -265,20 +265,19 @@ export function generarInformeHtml(
 
   // Marca ARCANCHILE embebida (SVG en línea, para que el informe descargado no dependa de archivos externos).
   const marca = (h: number) =>
-    `<svg viewBox="48 6 122 214" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block">` +
-    `<path d="M134 10 C 80 50, 46 132, 52 216 C 72 150, 96 106, 144 70 C 150 48, 146 26, 134 10 Z" fill="#2B93CF"/>` +
-    `<g fill="#2B93CF">` +
-    `<rect x="110" y="104" width="60" height="15" rx="2.5"/>` +
-    `<rect x="122" y="134" width="48" height="15" rx="2.5"/>` +
-    `<rect x="110" y="164" width="60" height="15" rx="2.5"/>` +
-    `<path d="M104 101 L123 101 L97 182 L78 182 Z"/>` +
-    `<rect x="78" y="168" width="18" height="15" rx="2.5"/>` +
-    `<rect x="151" y="164" width="18" height="19" rx="2.5"/>` +
+    `<svg viewBox="30 16 316 384" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block">` +
+    `<path d="M44 386 C 104 248, 150 112, 190 26 C 213 86, 233 150, 239 210 C 226 152, 213 102, 198 56 C 160 132, 96 292, 62 380 Z" fill="#3AA0D8"/>` +
+    `<g fill="#3AA0D8">` +
+    `<path d="M170 152 L206 152 L152 374 L116 374 Z"/>` +
+    `<rect x="198" y="152" width="34" height="222"/>` +
+    `<rect x="232" y="238" width="92" height="32" rx="2"/>` +
+    `<rect x="152" y="291" width="172" height="32" rx="2"/>` +
+    `<rect x="198" y="343" width="126" height="32" rx="2"/>` +
     `</g></svg>`;
 
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe de Gestión Comercial — ARCANCHILE</title>
 <style>
-  :root{--navy:#0f2a43;--navy2:#1e4265;--amber:#f59e0b;--brand:#2B93CF;--steel:#64748b;--line:#e2e8f0;}
+  :root{--navy:#0f2a43;--navy2:#1e4265;--amber:#f59e0b;--brand:#3AA0D8;--steel:#64748b;--line:#e2e8f0;}
   *{box-sizing:border-box}
   body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#0f172a;margin:0;padding:0 0 60px;background:#fff;font-size:12px;line-height:1.45}
   .wrap{max-width:900px;margin:0 auto;padding:24px}

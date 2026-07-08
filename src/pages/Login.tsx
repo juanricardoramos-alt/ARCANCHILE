@@ -29,7 +29,7 @@ export function Login() {
             <img src="/logo-mark.svg" alt="ARCANCHILE" className="h-[120px] w-auto" />
             <div className="mt-2 text-center font-black leading-none tracking-wide">
               <div className="text-2xl text-navy-950">ARCAN</div>
-              <div className="text-2xl tracking-[0.2em] text-[#2B93CF]">CHILE</div>
+              <div className="text-2xl tracking-[0.2em] text-[#3AA0D8]">CHILE</div>
             </div>
           </div>
         </div>
