@@ -10,6 +10,20 @@ npm run dev      # http://localhost:5173
 npm run build    # type-check + build de producción
 ```
 
+### Página única (abrir sin instalar nada)
+
+```bash
+npm run build:pagina   # genera dist-pagina/arcanchile.html
+```
+
+Produce **un solo archivo HTML autocontenido** (CSS, JS y logo incrustados) con
+toda la plataforma en modo demo local: se abre con doble clic o subiéndolo a
+cualquier hosting, sin servidor ni build previo. Usa `HashRouter` (rutas del
+tipo `.../arcanchile.html#/gestion-comercial`) porque no hay reescritura de
+rutas, y guarda el CRM en el `localStorage` del navegador que lo abre. Para el
+backend real (Supabase, usuarios, CRM compartido) usa el build normal — ver
+`SETUP.md`.
+
 **Acceso demo (login simulado, sin backend):** usuario `admin` · contraseña `arcanchile2026`
 
 **Responsivo (celular / tablet / desktop):** navegación con menú hamburguesa en celular; el catálogo y el CRM de contactos se muestran como **tarjetas táctiles** en celular (con botones grandes **Llamar / WhatsApp / Email**); KPIs, gráficos (Recharts) y filtros se adaptan al ancho; ninguna vista desborda horizontalmente y las tablas anchas conservan scroll interno.
