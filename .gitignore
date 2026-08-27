@@ -10,3 +10,19 @@ dist/
 
 # Artefactos PWA de desarrollo
 dev-dist/
+
+# BBDD comercial — datos personales (Ley 21.719): NUNCA versionar
+scripts/bbdd/output/
+scripts/bbdd/input/
+*.xlsx
+*_imercados.csv
+companies.csv
+company_industries.csv
+contacts.csv
+contact_company.csv
+contact_emails.csv
+contact_phones.csv
+empresas_posibles_duplicados.csv
+contactos_fusionados.csv
+contactos_conflicto.csv
+descartados_invalidos.csv
